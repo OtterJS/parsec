@@ -1,23 +1,20 @@
-<div align="center">
-<br /><br /><br />
-<img src="logo.png" width="400px" />
-<br /><br />
+# @otterjs/parsec
 
-![Vulnerabilities][vulns-badge-url]
-[![Version][v-badge-url]][npm-url] [![Coverage][cov-img]][cov-url] [![Github actions][gh-actions-img]][github-actions] [![Downloads][dl-badge-url]][npm-url]
+**HTTP request body-parsing for modern Node.js.**
 
-</div>
-<br />
+> :pushpin: This project is a fork of [tinyhttp/milliparsec](https://github.com/tinyhttp/milliparsec).
 
-Tiniest body parser in the universe. Built for modern Node.js.
-
-Check out [deno-libs/parsec](https://github.com/deno-libs/parsec) for Deno port.
+[![npm][npm-img]][npm-url]
+[![GitHub Workflow Status][gh-actions-img]][github-actions]
+[![Coverage][cov-img]][cov-url]
 
 ## Features
 
-- ⏩ built with `async` / `await`
-- 🛠 JSON / raw / urlencoded data support
-- 📦 tiny package size (675B)
+- ⏩ built with `async` / `await
+- 🛠 support for
+  - JSON
+  - urlencoded
+  - text
 - 🔥 no dependencies
 - ✨ [tinyhttp](https://github.com/tinyhttp/tinyhttp) and Express support
 - ⚡ 30% faster than body-parser
@@ -26,13 +23,13 @@ Check out [deno-libs/parsec](https://github.com/deno-libs/parsec) for Deno port.
 
 ```sh
 # pnpm
-pnpm i milliparsec
+pnpm i @otterjs/parsec
 
 # yarn
-yarn add milliparsec
+yarn add @otterjs/parsec
 
 # npm
-npm i milliparsec
+npm i @otterjs/parsec
 ```
 
 ## Usage
@@ -43,10 +40,12 @@ Use a middleware inside a server:
 
 ```js
 import { createServer } from 'http'
-import { json } from 'milliparsec'
+import { json } from '@otterjs/parsec'
+
+const parseJsonBody = json()
 
 const server = createServer(async (req: ReqWithBody, res) => {
-  await json()(req, res, (err) => void err && console.log(err))
+  await parseJsonBody(req, res, (err) => void console.log(err))
 
   res.setHeader('Content-Type', 'application/json')
 
@@ -60,7 +59,7 @@ const server = createServer(async (req: ReqWithBody, res) => {
 
 ```ts
 import { App } from '@tinyhttp/app'
-import { urlencoded } from 'milliparsec'
+import { urlencoded } from '@otterjs/parsec'
 
 new App()
   .use(urlencoded())
@@ -100,15 +99,13 @@ await custom(
 res.end(req.body) // "THIS TEXT MUST BE UPPERCASED"
 ```
 
-### What is "parsec"?
+### What does "parsec" mean?
 
 The parsec is a unit of length used to measure large distances to astronomical objects outside the Solar System.
 
-[vulns-badge-url]: https://img.shields.io/snyk/vulnerabilities/npm/milliparsec.svg?style=for-the-badge&color=25608B&label=vulns
-[v-badge-url]: https://img.shields.io/npm/v/milliparsec.svg?style=for-the-badge&color=25608B&logo=npm&label=
-[npm-url]: https://www.npmjs.com/package/milliparsec
-[dl-badge-url]: https://img.shields.io/npm/dt/milliparsec?style=for-the-badge&color=25608B
-[github-actions]: https://github.com/talentlessguy/milliparsec/actions
-[gh-actions-img]: https://img.shields.io/github/actions/workflow/status/tinyhttp/milliparsec/main.yml?branch=master&style=for-the-badge&color=25608B&label=&logo=github
-[cov-img]: https://img.shields.io/coveralls/github/tinyhttp/milliparsec?style=for-the-badge&color=25608B
-[cov-url]: https://coveralls.io/github/tinyhttp/milliparsec
+[npm-url]: https://npmjs.com/package/@otterjs/parsec
+[npm-img]: https://img.shields.io/npm/dt/@otterjs/parsec?style=for-the-badge&color=blueviolet
+[github-actions]: https://github.com/otterjs/parsec/actions
+[gh-actions-img]: https://img.shields.io/github/actions/workflow/status/otterjs/parsec/ci.yml?style=for-the-badge&logo=github&label=&color=blueviolet
+[cov-url]: https://coveralls.io/github/OtterJS/parsec
+[cov-img]: https://img.shields.io/coveralls/github/OtterJS/parsec?style=for-the-badge&color=blueviolet

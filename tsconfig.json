@@ -1,11 +1,25 @@
 {
-  "exclude": ["dist"],
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "noEmit": true,
+    "rootDir": "./src",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "./",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "noImplicitAny": true,
     "esModuleInterop": true,
-    "module": "ESNext",
-    "target": "ES2019",
-    "moduleResolution": "Node",
-    "declaration": true,
-    "outDir": "dist"
-  }
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "newLine": "lf",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "exclude": ["./dist", "./node_modules", "./tests"],
+  "include": ["**/*.ts"]
 }
