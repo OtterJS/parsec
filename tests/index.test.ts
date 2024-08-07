@@ -1,11 +1,15 @@
 import { createServer } from 'node:http'
 import { makeFetch } from 'supertest-fetch'
-import { test } from 'uvu'
-import { type ReqWithBody, custom, json, raw, text, urlencoded } from './src/index'
+import { test } from 'vitest'
+import { type ReqWithBody, custom, json, raw, text, urlencoded } from '../src'
 
 test('should parse JSON body', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await json()(req, res, (err) => void err && console.log(err))
+    try {
+      await json()(req, res, () => undefined)
+    } catch (err) {
+      console.log(err)
+    }
 
     res.setHeader('Content-Type', 'application/json')
 
@@ -24,7 +28,7 @@ test('should parse JSON body', async () => {
 
 test('should ignore JSON empty body', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await json()(req, res, (err) => void err && console.log(err))
+    await json()(req, res, () => undefined)
 
     res.setHeader('Content-Type', 'application/json')
 
@@ -53,7 +57,7 @@ test('should ignore JSON empty body', async () => {
 
 test('should parse json body with no content-type headers', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await json()(req, res, (err) => void err && console.log(err))
+    await json()(req, res, () => undefined)
 
     res.setHeader('Content-Type', 'application/json')
 
@@ -71,7 +75,7 @@ test('should parse json body with no content-type headers', async () => {
 
 test('json should call next() without a body', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await json()(req, res, (err) => void err && console.log(err))
+    await json()(req, res, () => undefined)
 
     res.setHeader('Content-Type', 'application/json')
 
@@ -89,7 +93,7 @@ test('json should call next() without a body', async () => {
 
 test('json should ignore GET request', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await json()(req, res, (err) => void err && console.log(err))
+    await json()(req, res, () => undefined)
 
     res.end('GET is ignored')
   })
@@ -101,7 +105,7 @@ test('json should ignore GET request', async () => {
 
 test('should parse urlencoded body', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await urlencoded()(req, res, (err) => void err && console.log(err))
+    await urlencoded()(req, res, () => undefined)
 
     res.setHeader('Content-Type', 'application/x-www-form-urlencoded')
 
@@ -120,7 +124,7 @@ test('should parse urlencoded body', async () => {
 
 test('urlencoded should ignore GET request', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await urlencoded()(req, res, (err) => void err && console.log(err))
+    await urlencoded()(req, res, () => undefined)
 
     res.end('GET is ignored')
   })
@@ -132,7 +136,7 @@ test('urlencoded should ignore GET request', async () => {
 
 test('should parse text body', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await text()(req, res, (err) => void err && console.log(err))
+    await text()(req, res, () => undefined)
 
     res.setHeader('Content-Type', 'text/plain')
 
@@ -151,7 +155,7 @@ test('should parse text body', async () => {
 
 test('text should ignore GET request', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await text()(req, res, (err) => void err && console.log(err))
+    await text()(req, res, () => undefined)
 
     res.setHeader('Content-Type', 'text/plain')
 
@@ -169,7 +173,7 @@ test('text should ignore GET request', async () => {
 
 test('should parse raw body', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await raw()(req, res, (err) => void err && console.log(err))
+    await raw()(req, res, () => undefined)
 
     res.setHeader('Content-Type', 'text/plain')
 
@@ -188,7 +192,7 @@ test('should parse raw body', async () => {
 
 test('raw should ignore GET request', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await raw()(req, res, (err) => void err && console.log(err))
+    await raw()(req, res, () => undefined)
 
     res.setHeader('Content-Type', 'text/plain')
 
@@ -206,7 +210,7 @@ test('raw should ignore GET request', async () => {
 
 test('should parse custom body', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await custom((d) => d.toUpperCase())(req, res, (err) => void err && console.log(err))
+    await custom((d) => d.toUpperCase())(req, res, () => undefined)
 
     res.setHeader('Content-Type', 'text/plain')
 
@@ -225,7 +229,7 @@ test('should parse custom body', async () => {
 
 test('custom should ignore GET request', async () => {
   const server = createServer(async (req: ReqWithBody, res) => {
-    await custom((d) => d.toUpperCase())(req, res, (err) => void err && console.log(err))
+    await custom((d) => d.toUpperCase())(req, res, () => undefined)
 
     res.setHeader('Content-Type', 'text/plain')
 
@@ -240,5 +244,3 @@ test('custom should ignore GET request', async () => {
     }
   }).expect(200, 'GET is ignored')
 })
-
-test.run()
