@@ -11,8 +11,9 @@ export const urlencoded = () => {
     },
     {
       preVerify: (req, res, charset) => {
-        if (charset !== "utf-8") throw createHttpError("URL")
-      }
+        if (charset != null && charset !== "utf-8") throw createHttpError(400, "urlencoded content may only use the UTF-8 character set")
+      },
+      defaultCharset: "utf-8"
     }
   )
   return async (req: ReqWithBody, res: Response, next: NextFunction) => {
