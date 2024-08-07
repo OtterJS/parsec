@@ -1,5 +1,5 @@
 import { getRead } from "@/get-read";
-import type { ReqWithBody, NextFunction } from "@/types";
+import type { ReqWithBody, Response, NextFunction } from "@/types";
 
 export const custom = <T = unknown>(fn: (body: string) => T) => {
   const read = getRead(fn)

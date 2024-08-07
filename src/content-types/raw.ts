@@ -1,6 +1,6 @@
 import { hasNoBody } from "@/utils/has-no-body";
 import { getRawRead } from "@/get-read";
-import type { ReqWithBody, NextFunction } from "@/types";
+import type { ReqWithBody, Response, NextFunction } from "@/types";
 
 export const raw = () => {
   const read = getRawRead()

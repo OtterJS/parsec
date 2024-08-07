@@ -4,7 +4,7 @@ import createHttpError from "http-errors"
 import { encodingExists as charsetExists, decode as iconvDecode } from "iconv-lite"
 import getRawBody from "raw-body"
 
-import { ReqWithBody } from "./types";
+import type { ReqWithBody, Response } from "./types";
 import { getCharset } from "@/utils/get-request-charset";
 import { onFinished, isFinished } from "@/utils/on-finished";
 
