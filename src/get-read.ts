@@ -127,6 +127,8 @@ export const getRead = <T = unknown>(parseFunction: (body: string) => T, options
     verify, 
     ...restOptions 
   } = options ?? {}
+  
+  if (!charsetExists(defaultCharset)) throw new Error("`defaultCharset` option must be a valid character encoding supported by `iconv-lite`")
 
   const rawRead = getRawRead(restOptions)
   
