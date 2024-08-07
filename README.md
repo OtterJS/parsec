@@ -16,7 +16,7 @@
   - urlencoded
   - text
 - 🔥 no dependencies
-- ✨ [tinyhttp](https://github.com/tinyhttp/tinyhttp) and Express support
+- ✨ [tinyhttp](https://github.com/tinyhttp/tinyhttp) support
 - ⚡ 30% faster than body-parser
 
 ## Install
