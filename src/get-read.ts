@@ -8,7 +8,7 @@ import type { ReqWithBody, Response } from "./types";
 import { getCharset } from "@/utils/get-request-charset";
 import { onFinished, isFinished } from "@/utils/on-finished";
 
-const supportedEncodings = new Map<string, (req: ReqWithBody) => { stream: ReadableStream, length?: number }>([
+const supportedEncodings = new Map<string, (req: ReqWithBody) => { stream: ReadableStream, length?: number | undefined }>([
   ["deflate", (req) => { 
     const stream = zlib.createInflate()
     req.pipe(stream)
@@ -25,6 +25,8 @@ const supportedEncodings = new Map<string, (req: ReqWithBody) => { stream: Reada
     return { stream }
   }],
   ["identity", (req) => {
+    let length: number | undefined = Number(req.headers["content-length"])
+    if (isNaN(length)) throw createHttpError(400, "'content-length' header missing or malformed")
     return { stream: req, length }
   }]
 ])
@@ -40,10 +42,9 @@ const getContentStream = (options?: ContentStreamOptions) => {
       type: 'encoding.unsupported'
     })
   }
-  
+
   return (req: ReqWithBody) => { 
     const encoding = (req.headers["content-encoding"] || "identity").toLowerCase()
-    const length = req.headers["content-length"]
   
     if (options?.inflate === false && encoding !== "identity") throw encodingUnsupported(encoding)
 
