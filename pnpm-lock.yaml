@@ -33,9 +33,6 @@ importers:
       '@types/http-errors':
         specifier: ^2.0.4
         version: 2.0.4
-      '@types/iconv':
-        specifier: ^3.0.4
-        version: 3.0.4
       '@types/node':
         specifier: ^20.14.9
         version: 20.14.9
@@ -456,9 +453,6 @@ packages:
 
   '@types/http-errors@2.0.4':
     resolution: {integrity: sha512-D0CFMMtydbJAegzOyHjtiKPLlvnm3iTZyZRSZoLq2mRhDdmLfIWOCYPfQJ4cu2erKghU++QvjcUjp/5h7hESpA==}
-
-  '@types/iconv@3.0.4':
-    resolution: {integrity: sha512-bk+twLWL20lSbLw65vMUK1oy9dVEDMytQczaxqQs6p1MjY0ogiOidSLPsbfyQ04HxN9spZ9FPYkXZuCyw5C7Nw==}
 
   '@types/istanbul-lib-coverage@2.0.6':
     resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
@@ -1422,10 +1416,6 @@ snapshots:
   '@types/estree@1.0.5': {}
 
   '@types/http-errors@2.0.4': {}
-
-  '@types/iconv@3.0.4':
-    dependencies:
-      '@types/node': 20.14.9
 
   '@types/istanbul-lib-coverage@2.0.6': {}
 

@@ -21,7 +21,6 @@
     "@biomejs/biome": "1.8.3",
     "@tinyhttp/app": "^2.2.4",
     "@types/http-errors": "^2.0.4",
-    "@types/iconv": "^3.0.4",
     "@types/node": "^20.14.9",
     "@types/on-finished": "^2.3.4",
     "c8": "10.1.2",
