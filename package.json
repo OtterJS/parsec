@@ -1,15 +1,15 @@
 {
-  "name": "milliparsec",
+  "name": "@otterhttp/parsec",
   "version": "3.0.0",
-  "description": "tiniest body parser in the universe",
-  "repository": "https://github.com/talentlessguy/parsec.git",
-  "author": "talentlessguy <pilll.PL22@gmail.com>",
+  "description": "ESM / TypeScript re-write of body-parser",
+  "repository": "https://github.com/otterjs/parsec.git",
+  "author": "OtterJS <otterjs@joeclack.me.uk>",
   "license": "MIT",
   "types": "./dist/index.d.ts",
   "type": "module",
   "keywords": [
     "body-parser",
-    "express",
+    "tinyhttp",
     "http",
     "body-parsing"
   ],
