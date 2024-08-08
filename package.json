@@ -1,6 +1,5 @@
 {
   "name": "@otterhttp/parsec",
-  "version": "3.0.0",
   "description": "ESM / TypeScript re-write of body-parser",
   "repository": "https://github.com/otterjs/parsec.git",
   "author": "OtterJS <otterjs@joeclack.me.uk>",
