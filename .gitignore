@@ -1,46 +1,55 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
+# Exclude everything
+/*
 
-# Coverage directory used by tools like istanbul
-coverage
+# Specific includes
 
-# nyc test coverage
-.nyc_output
+## Editorconfig
+!.editorconfig
 
-# node-waf configuration
-.lock-wscript
+## Package manager
+!/package.json
+!/pnpm-lock.yaml
 
-# Dependency directories
-node_modules/
-jspm_packages/
+## Config files
+!/*config.ts
+!/*config.mjs
+!/*config.cjs
+!/*config.js
+!/*config.json
+!/*env.d.ts
+!/*env.ts
+!/*rc.json
 
-# TypeScript v1 declaration files
-typings/
+## Biome.js
+!/biome.json
 
-# Optional npm cache directory
-.npm
+## Eslint
+!.eslintignore
+!.eslintrc
 
-# Optional eslint cache
-.eslintcache
+## Husky
+!.husky
 
-# Optional REPL history
-.node_repl_history
+## Prettier
+!.prettierignore
+!.prettierrc
 
-# Output of 'npm pack'
-*.tgz
+## Markdowns
+!*.md
+!LICENSE
 
-# Yarn Integrity file
-.yarn-integrity
+## important Git files
+!.gitmodules
+!.gitignore
+!.gitattributes
+!.git-blame-ignore-revs
 
-# dotenv environment variables file
-.env
+## GitHub specific
+!/.github/
 
-dist
-coverage
-coverage.lcov
+## Sources
+!/bench
+!/tests
+!/src
+
+# Explicit exceptions/ignores
