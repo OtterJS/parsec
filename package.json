@@ -40,8 +40,9 @@
   },
   "packageManager": "pnpm@9.4.0",
   "dependencies": {
-    "@tinyhttp/content-type": "^0.1.4",
-    "http-errors": "^2.0.0",
+    "@otterhttp/content-type": "^0.2.0",
+    "@otterhttp/type-is": "^3.0.0",
+    "@otterhttp/errors": "^0.2.0",
     "iconv-lite": "^0.6.3",
     "on-finished": "^2.4.1",
     "raw-body": "^3.0.0"
