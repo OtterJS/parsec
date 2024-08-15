@@ -40,8 +40,8 @@
   },
   "packageManager": "pnpm@9.4.0",
   "dependencies": {
-    "@otterhttp/content-type": "^0.2.0",
-    "@otterhttp/type-is": "^3.0.0",
+    "@otterhttp/content-type": "^0.3.0",
+    "@otterhttp/type-is": "^3.0.1",
     "@otterhttp/errors": "^0.2.0",
     "iconv-lite": "^0.6.3",
     "on-finished": "^2.4.1",

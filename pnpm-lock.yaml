@@ -9,14 +9,14 @@ importers:
   .:
     dependencies:
       '@otterhttp/content-type':
-        specifier: ^0.2.0
-        version: 0.2.0
+        specifier: ^0.3.0
+        version: 0.3.0
       '@otterhttp/errors':
         specifier: ^0.2.0
         version: 0.2.0
       '@otterhttp/type-is':
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^3.0.1
+        version: 3.1.0
       iconv-lite:
         specifier: ^0.6.3
         version: 0.6.3
@@ -299,16 +299,16 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@otterhttp/content-type@0.2.0':
-    resolution: {integrity: sha512-75xXMpdx5qhaL7IMhVa0CS/0VgRZboi5MBixNCVxN92OecmAEXzJEPSRKoGFt14/ZbW0PX2wrOP2rO35uqS3nw==}
+  '@otterhttp/content-type@0.3.0':
+    resolution: {integrity: sha512-OtkIbQ14X9vvg8m0WwAH1PqQwqI1s9/ZtbebhLtPlyUhpiUvK7auTUzfFQK7s6eGQe6izIRnF5bX+puzfIBUmQ==}
     engines: {node: '>=20.16.0'}
 
   '@otterhttp/errors@0.2.0':
     resolution: {integrity: sha512-QaUyvfOI6DBqiMTVDC6UpmtcaNXi672leKIOdI4r5WdjXTGCxHoP66VMHpb3XEOETTrSMBfFq63M6Md79CBOKQ==}
     engines: {node: '>=20.16.0'}
 
-  '@otterhttp/type-is@3.0.0':
-    resolution: {integrity: sha512-WfOyqo6T9/+6jogwrLDqHQOYfXaWt77tjad37SuP+CYGF98X0GvS7BUEuBkB0/SYE3z4e9plnDhZBTLFiFHKag==}
+  '@otterhttp/type-is@3.1.0':
+    resolution: {integrity: sha512-jlnYwpp6sFlklqHtLHzzYG0tA+JvEjJ42xKFpNPTfnmuwc+Tp94irHd47feKljv/3pckogx6KrrTlkwpb4rEEQ==}
     engines: {node: '>=20.16.0'}
 
   '@pkgjs/parseargs@0.11.0':
@@ -1316,15 +1316,15 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.4.15
 
-  '@otterhttp/content-type@0.2.0': {}
+  '@otterhttp/content-type@0.3.0': {}
 
   '@otterhttp/errors@0.2.0':
     dependencies:
       module-error: 1.0.2
 
-  '@otterhttp/type-is@3.0.0':
+  '@otterhttp/type-is@3.1.0':
     dependencies:
-      '@otterhttp/content-type': 0.2.0
+      '@otterhttp/content-type': 0.3.0
       mime: 4.0.4
 
   '@pkgjs/parseargs@0.11.0':
