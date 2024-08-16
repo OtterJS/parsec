@@ -1,4 +1,4 @@
-# @otterjs/parsec
+# @otterhttp/parsec
 
 **HTTP request body-parsing for modern Node.js.**
 
@@ -16,20 +16,20 @@
   - urlencoded
   - text
 - 🔥 no dependencies
-- ✨ [tinyhttp](https://github.com/tinyhttp/tinyhttp) support
+- ✨ [otterhttp](https://github.com/otterjs/otterhttp) support
 - ⚡ 30% faster than body-parser
 
 ## Install
 
 ```sh
 # pnpm
-pnpm i @otterjs/parsec
+pnpm i @otterhttp/parsec
 
 # yarn
-yarn add @otterjs/parsec
+yarn add @otterhttp/parsec
 
 # npm
-npm i @otterjs/parsec
+npm i @otterhttp/parsec
 ```
 
 ## Usage
@@ -39,12 +39,12 @@ npm i @otterjs/parsec
 Use a middleware inside a server:
 
 ```js
-import { createServer } from 'http'
-import { json } from '@otterjs/parsec'
+import { createServer } from 'node:http'
+import { json } from '@otterhttp/parsec'
 
 const parseJsonBody = json()
 
-const server = createServer(async (req: ReqWithBody, res) => {
+const server = createServer(async (req: HasBody, res) => {
   await parseJsonBody(req, res, (err) => void console.log(err))
 
   res.setHeader('Content-Type', 'application/json')
@@ -55,11 +55,11 @@ const server = createServer(async (req: ReqWithBody, res) => {
 
 ### Web frameworks integration
 
-#### tinyhttp
+#### otterhttp
 
 ```ts
-import { App } from '@tinyhttp/app'
-import { urlencoded } from '@otterjs/parsec'
+import { App } from '@otterhttp/app'
+import { urlencoded } from '@otterhttp/parsec'
 
 new App()
   .use(urlencoded())
