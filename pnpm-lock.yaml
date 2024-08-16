@@ -33,9 +33,6 @@ importers:
       '@types/node':
         specifier: ^20.14.9
         version: 20.14.9
-      '@types/on-finished':
-        specifier: ^2.3.4
-        version: 2.3.4
       '@vitest/coverage-istanbul':
         specifier: ^2.0.5
         version: 2.0.5(vitest@2.0.5(@types/node@20.14.9))
@@ -681,9 +678,6 @@ packages:
 
   '@types/node@20.14.9':
     resolution: {integrity: sha512-06OCtnTXtWOZBJlRApleWndH4JsRVs1pDCc8dLSQp+7PpUpX3ePdHyeNSFTeSe7FtKyQkrlPvHwJOW3SLd8Oyg==}
-
-  '@types/on-finished@2.3.4':
-    resolution: {integrity: sha512-Ld4UQD3udYcKPaAWlI1EYXKhefkZcTlpqOLkQRmN3u5Ml/tUypMivUHbNH8LweP4H4FlhGGO+uBjJI1Y1dkE1g==}
 
   '@vitest/coverage-istanbul@2.0.5':
     resolution: {integrity: sha512-BvjWKtp7fiMAeYUD0mO5cuADzn1gmjTm54jm5qUEnh/O08riczun8rI4EtQlg3bWoRo2lT3FO8DmjPDX9ZthPw==}
@@ -2138,10 +2132,6 @@ snapshots:
   '@types/node@20.14.9':
     dependencies:
       undici-types: 5.26.5
-
-  '@types/on-finished@2.3.4':
-    dependencies:
-      '@types/node': 20.14.9
 
   '@vitest/coverage-istanbul@2.0.5(vitest@2.0.5(@types/node@20.14.9))':
     dependencies:
