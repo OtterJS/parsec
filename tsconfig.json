@@ -20,6 +20,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "exclude": ["./dist", "./node_modules", "./tests"],
+  "exclude": ["./dist", "./node_modules"],
   "include": ["**/*.ts"]
 }

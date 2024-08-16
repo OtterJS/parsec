@@ -10,10 +10,7 @@ import { typeChecker } from '@/utils/type-checker'
 type UrlencodedBodyParsingOptions<
   Req extends Request & HasBody<Record<string, string>> = Request & HasBody<Record<string, string>>,
   Res extends Response<Req> = Response<Req>,
-> = Omit<
-  ReadOptions,
-  'defaultCharset'
-> & {
+> = Omit<ReadOptions, 'defaultCharset'> & {
   /**
    * Matcher used to determine which requests the middleware should body-parse.
    *
@@ -48,13 +45,10 @@ export function urlencoded<
 
   const matcher = options?.matcher ?? typeChecker(ContentType.parse('application/*+x-www-form-urlencoded'))
 
-  const read = getRead<Record<string, string>>(
-    (x) => {
-      const urlSearchParam = new URLSearchParams(x.toString())
-      return Object.fromEntries(urlSearchParam.entries())
-    },
-    optionsCopy,
-  )
+  const read = getRead<Record<string, string>>((x) => {
+    const urlSearchParam = new URLSearchParams(x.toString())
+    return Object.fromEntries(urlSearchParam.entries())
+  }, optionsCopy)
   return async (req: Req, res: Res, next: NextFunction) => {
     if (hasNoBody(req.method)) return next()
     if (!matcher(req, res)) return next()

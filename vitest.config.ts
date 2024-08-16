@@ -6,8 +6,8 @@ export default {
     coverage: {
       provider: 'istanbul',
       reporter: ['lcov'],
-      include: ['src']
-    }
+      include: ['src'],
+    },
   },
   resolve: {
     alias: {
