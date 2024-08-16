@@ -31,7 +31,6 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install
       - run: pnpm test:coverage
-      - run: pnpm test:report
       - name: Coveralls
         uses: coverallsapp/github-action@master
         with:
