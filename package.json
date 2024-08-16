@@ -17,7 +17,6 @@
     "@types/node": "^20.14.9",
     "@vitest/coverage-istanbul": "^2.0.5",
     "supertest-fetch": "^2.0.0",
-    "tsm": "^2.3.0",
     "tsup": "^8.2.4",
     "typescript": "^5.5.3",
     "vitest": "^2.0.5"
