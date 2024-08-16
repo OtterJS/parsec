@@ -1,4 +1,5 @@
 import { ContentType } from '@otterhttp/content-type'
+import { parse, type ParsedUrlQuery } from 'node:querystring'
 
 import { type ReadOptions, getRead } from '@/get-read'
 import type { HasBody, NextFunction, Request, Response } from '@/types'
@@ -8,7 +9,7 @@ import { hasNoBody } from '@/utils/has-no-body'
 import { typeChecker } from '@/utils/type-checker'
 
 type UrlencodedBodyParsingOptions<
-  Req extends Request & HasBody<Record<string, string>> = Request & HasBody<Record<string, string>>,
+  Req extends Request & HasBody<ParsedUrlQuery> = Request & HasBody<ParsedUrlQuery>,
   Res extends Response<Req> = Response<Req>,
 > = Omit<ReadOptions, 'defaultCharset'> & {
   /**
@@ -35,7 +36,7 @@ function ensureCharsetIsUtf8(_req: unknown, _res: unknown, charset: string | und
 }
 
 export function urlencoded<
-  Req extends Request & HasBody<Record<string, string>> = Request & HasBody<Record<string, string>>,
+  Req extends Request & HasBody<ParsedUrlQuery> = Request & HasBody<ParsedUrlQuery>,
   Res extends Response<Req> = Response<Req>,
 >(options?: UrlencodedBodyParsingOptions<Req, Res>) {
   const optionsCopy: ReadOptions = Object.assign({ defaultCharset: 'utf-8' }, options)
@@ -45,10 +46,7 @@ export function urlencoded<
 
   const matcher = options?.matcher ?? typeChecker(ContentType.parse('application/*+x-www-form-urlencoded'))
 
-  const read = getRead<Record<string, string>>((x) => {
-    const urlSearchParam = new URLSearchParams(x.toString())
-    return Object.fromEntries(urlSearchParam.entries())
-  }, optionsCopy)
+  const read = getRead<ParsedUrlQuery>((x) => parse(x), optionsCopy)
   return async (req: Req, res: Res, next: NextFunction) => {
     if (hasNoBody(req.method)) return next()
     if (!matcher(req, res)) return next()
@@ -56,3 +54,5 @@ export function urlencoded<
     next()
   }
 }
+
+export type { ParsedUrlQuery }
