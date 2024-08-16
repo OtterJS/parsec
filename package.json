@@ -18,8 +18,7 @@
   "exports": "./dist/index.js",
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
-    "@tinyhttp/app": "^2.2.4",
-    "@types/http-errors": "^2.0.4",
+    "@otterhttp/app": "^3.0.0",
     "@types/node": "^20.14.9",
     "@types/on-finished": "^2.3.4",
     "@vitest/coverage-istanbul": "^2.0.5",
@@ -39,9 +38,9 @@
   },
   "packageManager": "pnpm@9.4.0",
   "dependencies": {
-    "@otterhttp/content-type": "^0.3.0",
-    "@otterhttp/type-is": "^3.0.1",
+    "@otterhttp/content-type": "^0.4.0",
     "@otterhttp/errors": "^0.2.0",
+    "@otterhttp/type-is": "^4.0.0",
     "iconv-lite": "^0.6.3",
     "raw-body": "^3.0.0"
   }

@@ -1,34 +1,52 @@
-import * as zlib from "node:zlib"
-import type { Readable as ReadableStream } from "node:stream"
-import createHttpError from "http-errors"
-import { encodingExists as charsetExists, decode as iconvDecode } from "iconv-lite"
-import getRawBody from "raw-body"
+import type { Readable as ReadableStream } from 'node:stream'
+import { finished } from 'node:stream/promises'
+import * as zlib from 'node:zlib'
+import { ClientError, ServerError } from '@otterhttp/errors'
+import { encodingExists as charsetExists, decode as iconvDecode } from 'iconv-lite'
+import getRawBody from 'raw-body'
 
-import type { ReqWithBody, Response } from "./types";
-import { getCharset } from "@/utils/get-request-charset";
-import { onFinished, isFinished } from "@/utils/on-finished";
+import { ClientCharsetError, ClientEncodingError, ParseFailedError, VerifyFailedError } from '@/utils/errors'
+import { getCharset } from '@/utils/get-request-charset'
+import { isFinished } from '@/utils/is-finished'
+import type { HasBody, Request, Response } from './types'
 
-const supportedEncodings = new Map<string, (req: ReqWithBody) => { stream: ReadableStream, length?: number | undefined }>([
-  ["deflate", (req) => { 
-    const stream = zlib.createInflate()
-    req.pipe(stream)
-    return { stream }
-  }],
-  ["gzip", (req) => {
-    const stream = zlib.createGunzip()
-    req.pipe(stream)
-    return { stream }
-  }],
-  ["br", (req) => {
-    const stream = zlib.createBrotliDecompress()
-    req.pipe(stream)
-    return { stream }
-  }],
-  ["identity", (req) => {
-    let length: number | undefined = Number(req.headers["content-length"])
-    if (isNaN(length)) throw createHttpError(400, "'content-length' header missing or malformed")
-    return { stream: req, length }
-  }]
+const supportedEncodings = new Map<string, (req: Request) => { stream: ReadableStream; length?: number | undefined }>([
+  [
+    'deflate',
+    (req) => {
+      const stream = zlib.createInflate()
+      req.pipe(stream)
+      return { stream }
+    },
+  ],
+  [
+    'gzip',
+    (req) => {
+      const stream = zlib.createGunzip()
+      req.pipe(stream)
+      return { stream }
+    },
+  ],
+  [
+    'br',
+    (req) => {
+      const stream = zlib.createBrotliDecompress()
+      req.pipe(stream)
+      return { stream }
+    },
+  ],
+  [
+    'identity',
+    (req) => {
+      const length: number | undefined = Number(req.headers['content-length'])
+      if (Number.isNaN(length))
+        throw new ClientError("'content-length' header missing or malformed", {
+          statusCode: 400,
+          code: 'ERR_CONTENT_LENGTH_MISSING_OR_MALFORMED',
+        })
+      return { stream: req, length }
+    },
+  ],
 ])
 
 type ContentStreamOptions = {
@@ -37,16 +55,17 @@ type ContentStreamOptions = {
 
 const getContentStream = (options?: ContentStreamOptions) => {
   const encodingUnsupported = (encoding: string) => {
-    return createHttpError(415, 'content encoding unsupported', {
+    return new ClientEncodingError('content encoding unsupported', {
+      statusCode: 415,
       encoding: encoding,
-      type: 'encoding.unsupported'
+      code: 'ERR_CONTENT_ENCODING_UNSUPPORTED',
     })
   }
 
-  return (req: ReqWithBody) => { 
-    const encoding = (req.headers["content-encoding"] || "identity").toLowerCase()
-  
-    if (options?.inflate === false && encoding !== "identity") throw encodingUnsupported(encoding)
+  return (req: Request) => {
+    const encoding = (req.headers['content-encoding'] || 'identity').toLowerCase()
+
+    if (options?.inflate === false && encoding !== 'identity') throw encodingUnsupported(encoding)
 
     const encodingStreamFunction = supportedEncodings.get(encoding)
     if (encodingStreamFunction == null) throw encodingUnsupported(encoding)
@@ -55,32 +74,43 @@ const getContentStream = (options?: ContentStreamOptions) => {
   }
 }
 
-type RawPreVerifyFunction<Req = ReqWithBody, Res = Response> = (req: Req, res: Res) => void | Promise<void>
-type RawVerifyFunction<Req = ReqWithBody, Res = Response> = (req: Req, res: Res, buf: Buffer) => void | Promise<void>
+type RawPreVerifyFunction<
+  Req extends Request & HasBody = Request & HasBody,
+  Res extends Response<Req> = Response<Req>,
+> = (req: Req, res: Res) => void | Promise<void>
+type RawVerifyFunction<Req extends Request & HasBody = Request & HasBody, Res extends Response<Req> = Response<Req>> = (
+  req: Req,
+  res: Res,
+  buf: Buffer,
+) => void | Promise<void>
 
-type RawReadOptions = ContentStreamOptions & {
+export type RawReadOptions = ContentStreamOptions & {
   preVerify?: RawPreVerifyFunction
   verify?: RawVerifyFunction
   limit?: string | number
 }
 
-const voidConsumeRequestStream = async (req: ReqWithBody): Promise<void> => {
+const voidConsumeRequestStream = async (req: Request): Promise<void> => {
   if (isFinished(req)) return
   req.resume()
-  try { await onFinished(req) } catch {}
+  try {
+    await finished(req)
+  } catch {}
 }
 
 export const getRawRead = <T = unknown>(options?: RawReadOptions) => {
   const contentStream = getContentStream(options)
 
-  return async (req: ReqWithBody<T>, res: Response): Promise<Buffer> => {
+  return async (req: Request & HasBody<T>, res: Response): Promise<Buffer> => {
     if (options?.preVerify != null) {
       try {
         options?.preVerify?.(req, res)
       } catch (err) {
-        if (createHttpError.isHttpError(err)) throw createHttpError(403, err, { type: err.type ?? "entity.pre-verify.failed" })
-        if (err instanceof Error) throw createHttpError(403, err, { type: "entity.pre-verify.failed" })
-        throw createHttpError(403, { type: "entity.pre-verify.failed" })
+        throw new ClientError('Body pre-verification failed', {
+          statusCode: 403,
+          code: 'ERR_ENTITY_PRE_VERIFY_FAILED',
+          cause: err instanceof Error ? err : undefined,
+        })
       }
     }
 
@@ -93,52 +123,66 @@ export const getRawRead = <T = unknown>(options?: RawReadOptions) => {
       stream.destroy()
 
       await voidConsumeRequestStream(req)
-      if (err instanceof Error) throw createHttpError(400, err)
-      throw createHttpError(500)
+      if (err instanceof Error)
+        throw new ClientError('Body pre-verification failed', {
+          statusCode: 400,
+          code: 'ERR_RAW_BODY_READ_FAILED',
+          cause: err,
+        })
+      throw new ServerError()
     }
-    
+
     if (options?.verify != null) {
       try {
         options?.verify?.(req, res, bodyBlob)
       } catch (err) {
-        if (createHttpError.isHttpError(err)) throw createHttpError(403, err, { body: bodyBlob, type: err.type ?? "entity.verify.failed" })
-        if (err instanceof Error) throw createHttpError(403, err, { body: bodyBlob, type: "entity.verify.failed" })
-        throw createHttpError(403, { body: bodyBlob, type: "entity.verify.failed" })
+        throw new VerifyFailedError('Body verification failed', {
+          statusCode: 403,
+          body: bodyBlob,
+          code: 'ERR_ENTITY_VERIFY_FAILED',
+          cause: err instanceof Error ? err : undefined,
+        })
       }
     }
-    
+
     return bodyBlob
   }
 }
 
-type PreVerifyFunction<Req = ReqWithBody, Res = Response> = (req: Req, res: Res, charset: string | undefined) => void | Promise<void>
-type VerifyFunction<Req = ReqWithBody, Res = Response> = (req: Req, res: Res, charset: string | undefined) => void | Promise<void>
+type PreVerifyFunction<Req extends Request & HasBody = Request & HasBody, Res extends Response<Req> = Response<Req>> = (
+  req: Req,
+  res: Res,
+  charset: string | undefined,
+) => void | Promise<void>
+type VerifyFunction<Req extends Request & HasBody = Request & HasBody, Res extends Response<Req> = Response<Req>> = (
+  req: Req,
+  res: Res,
+  blob: Buffer,
+  charset: string | undefined,
+) => void | Promise<void>
 
-type ReadOptions = Omit<RawReadOptions, 'verify' | 'preVerify'> & {
-  preVerify?: PreVerifyFunction,
+export type ReadOptions = Omit<RawReadOptions, 'verify' | 'preVerify'> & {
+  preVerify?: PreVerifyFunction
   verify?: VerifyFunction
   defaultCharset?: string
 }
 
 export const getRead = <T = unknown>(parseFunction: (body: string) => T, options?: ReadOptions) => {
-  const { 
-    defaultCharset = "utf-8", 
-    preVerify, 
-    verify, 
-    ...restOptions 
-  } = options ?? {}
-  
-  if (!charsetExists(defaultCharset)) throw new Error("`defaultCharset` option must be a valid character encoding supported by `iconv-lite`")
+  const { defaultCharset = 'utf-8', preVerify, verify, ...restOptions } = options ?? {}
+
+  if (!charsetExists(defaultCharset))
+    throw new Error('`defaultCharset` option must be a valid character encoding supported by `iconv-lite`')
 
   const rawRead = getRawRead(restOptions)
-  
-  return async (req: ReqWithBody<T>, res: Response): Promise<T> => {
+
+  return async (req: Request & HasBody<T>, res: Response): Promise<T> => {
     let requestCharset = getCharset(req)
 
     if (requestCharset != null && !charsetExists(requestCharset)) {
-      throw createHttpError(415, `unsupported charset "${requestCharset.toUpperCase()}"`, {
+      throw new ClientCharsetError(`unsupported charset "${requestCharset.toUpperCase()}"`, {
+        statusCode: 415,
         charset: requestCharset,
-        type: 'charset.unsupported'
+        code: 'ERR_CHARSET_UNSUPPORTED',
       })
     }
 
@@ -146,29 +190,51 @@ export const getRead = <T = unknown>(parseFunction: (body: string) => T, options
       try {
         options?.preVerify?.(req, res, requestCharset)
       } catch (err) {
-        if (createHttpError.isHttpError(err)) throw createHttpError(403, err, { type: err.type ?? "entity.pre-verify.failed" })
-        if (err instanceof Error) throw createHttpError(403, err, { type: "entity.pre-verify.failed" })
-        throw createHttpError(403, { type: "entity.pre-verify.failed" })
+        throw new ClientError('Body pre-verification failed', {
+          statusCode: 403,
+          code: 'ERR_ENTITY_PRE_VERIFY_FAILED',
+          cause: err instanceof Error ? err : undefined,
+        })
       }
     }
-    
+
     const bodyBlob = await rawRead(req, res)
+
+    if (verify != null) {
+      try {
+        verify(req, res, bodyBlob, requestCharset)
+      } catch (err) {
+        throw new VerifyFailedError('Body verification failed', {
+          statusCode: 403,
+          body: bodyBlob,
+          code: 'ERR_ENTITY_VERIFY_FAILED',
+          cause: err instanceof Error ? err : undefined,
+        })
+      }
+    }
+
     requestCharset ??= defaultCharset
-    
+
     let body: string
     try {
       body = iconvDecode(bodyBlob, requestCharset)
     } catch (err) {
-      if (err instanceof Error) throw createHttpError(400, `request body does not adhere to charset '${requestCharset}'`, err)
-      throw createHttpError(400, `request body does not adhere to charset '${requestCharset}'`)
+      throw new ClientError(`request body does not adhere to charset '${requestCharset}'`, {
+        statusCode: 400,
+        code: 'ERR_CONTENT_CHARSET_MISMATCH',
+        cause: err instanceof Error ? err : undefined,
+      })
     }
 
     try {
       return parseFunction(body)
     } catch (err) {
-      if (createHttpError.isHttpError(err)) throw createHttpError(400, err, { body, type: err.type ?? "entity.parse.failed" })
-      if (err instanceof Error) throw createHttpError(400, err, { body, type: "entity.parse.failed" })
-      throw createHttpError(400, { body, type: "entity.parse.failed" })
+      throw new ParseFailedError('Body parsing failed', {
+        statusCode: 400,
+        body,
+        code: 'ERR_ENTITY_PARSE_FAILED',
+        cause: err instanceof Error ? err : undefined,
+      })
     }
   }
 }

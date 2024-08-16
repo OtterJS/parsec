@@ -1,18 +1,18 @@
-import { parse as parseContentType } from "@tinyhttp/content-type"
+import { parse as parseContentType } from '@otterhttp/content-type'
 
-import { ReqWithBody } from "@/types";
+import type { Request } from '@/types'
 
 type ContentType = ReturnType<typeof parseContentType>
 
-export const getCharset = (request: ReqWithBody) => {
+export const getCharset = (request: Request) => {
   let contentType: ContentType
   try {
     contentType = parseContentType(request)
   } catch {
     return undefined
   }
-  
+
   const charset = contentType.parameters?.charset
-  if (typeof charset === "string") return charset.toLowerCase()
+  if (typeof charset === 'string') return charset.toLowerCase()
   return undefined
 }

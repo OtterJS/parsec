@@ -1,10 +1,10 @@
 import { createServer } from 'node:http'
 import { makeFetch } from 'supertest-fetch'
 import { test } from 'vitest'
-import { type ReqWithBody, type Response, custom, json, raw, text, urlencoded } from '../src'
+import { type Request, type HasBody, type Response, custom, json, raw, text, urlencoded } from '../src'
 
 const jsonInstance = json()
-const loggingJson = async (req: ReqWithBody, res: Response) => {
+const loggingJson = async (req: Request & HasBody, res: Response) => {
   try {
     await jsonInstance(req, res, () => undefined)
   } catch (err) {
@@ -13,7 +13,7 @@ const loggingJson = async (req: ReqWithBody, res: Response) => {
 }
 
 test('should parse JSON body', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+  const server = createServer(async (req: Request & HasBody, res) => {
     await loggingJson(req, res)
 
     res.setHeader('Content-Type', 'application/json')
@@ -26,13 +26,13 @@ test('should parse JSON body', async () => {
     method: 'POST',
     headers: {
       Accept: 'application/json',
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   }).expect(200, { hello: 'world' })
 })
 
 test('should ignore JSON empty body', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+  const server = createServer(async (req: Request & HasBody, res) => {
     await loggingJson(req, res)
 
     res.setHeader('Content-Type', 'application/json')
@@ -46,8 +46,8 @@ test('should ignore JSON empty body', async () => {
     method: 'POST',
     headers: {
       Accept: 'application/json',
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   }).expect(200, { ok: true })
 
   // Unset body
@@ -55,13 +55,13 @@ test('should ignore JSON empty body', async () => {
     method: 'POST',
     headers: {
       Accept: 'application/json',
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   }).expect(200, { ok: true })
 })
 
-test('should parse json body with no content-type headers', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+test('should not parse json body with no content-type headers', async () => {
+  const server = createServer(async (req: Request & HasBody, res) => {
     await loggingJson(req, res)
 
     res.setHeader('Content-Type', 'application/json')
@@ -73,13 +73,13 @@ test('should parse json body with no content-type headers', async () => {
     body: JSON.stringify({ hello: 'world' }),
     method: 'POST',
     headers: {
-      Accept: 'application/json'
-    }
-  }).expect(200, { hello: 'world' })
+      Accept: 'application/json',
+    },
+  }).expect(200, "")
 })
 
 test('json should call next() without a body', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+  const server = createServer(async (req: Request & HasBody, res) => {
     await loggingJson(req, res)
 
     res.setHeader('Content-Type', 'application/json')
@@ -91,25 +91,25 @@ test('json should call next() without a body', async () => {
     method: 'POST',
     headers: {
       Accept: 'application/json',
-      'Content-Type': 'application/json'
-    }
+      'Content-Type': 'application/json',
+    },
   }).expect(200)
 })
 
 test('json should ignore GET request', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+  const server = createServer(async (req: Request & HasBody, res) => {
     await loggingJson(req, res)
 
     res.end('GET is ignored')
   })
 
   await makeFetch(server)('/', {
-    method: 'GET'
+    method: 'GET',
   }).expect(200, 'GET is ignored')
 })
 
 const urlencodedInstance = urlencoded()
-const loggingUrlencoded = async (req: ReqWithBody, res: Response) => {
+const loggingUrlencoded = async (req: Request & HasBody<Record<string, string>>, res: Response) => {
   try {
     await urlencodedInstance(req, res, () => undefined)
   } catch (err) {
@@ -118,7 +118,7 @@ const loggingUrlencoded = async (req: ReqWithBody, res: Response) => {
 }
 
 test('should parse urlencoded body', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+  const server = createServer(async (req: Request & HasBody<Record<string, string>>, res) => {
     await loggingUrlencoded(req, res)
 
     res.setHeader('Content-Type', 'application/x-www-form-urlencoded')
@@ -131,25 +131,25 @@ test('should parse urlencoded body', async () => {
     method: 'POST',
     headers: {
       Accept: 'application/x-www-form-urlencoded',
-      'Content-Type': 'application/x-www-form-urlencoded'
-    }
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
   }).expect(200, { hello: 'world' })
 })
 
 test('urlencoded should ignore GET request', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+  const server = createServer(async (req: Request & HasBody<Record<string, string>>, res) => {
     await loggingUrlencoded(req, res)
 
     res.end('GET is ignored')
   })
 
   await makeFetch(server)('/', {
-    method: 'GET'
+    method: 'GET',
   }).expect(200, 'GET is ignored')
 })
 
 const textInstance = text()
-const loggingText = async (req: ReqWithBody, res: Response) => {
+const loggingText = async (req: Request & HasBody<string>, res: Response) => {
   try {
     await textInstance(req, res, () => undefined)
   } catch (err) {
@@ -158,7 +158,7 @@ const loggingText = async (req: ReqWithBody, res: Response) => {
 }
 
 test('should parse text body', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+  const server = createServer(async (req: Request & HasBody<string>, res) => {
     await loggingText(req, res)
 
     res.setHeader('Content-Type', 'text/plain')
@@ -171,13 +171,13 @@ test('should parse text body', async () => {
     method: 'POST',
     headers: {
       Accept: 'text/plain',
-      'Content-Type': 'text/plain'
-    }
+      'Content-Type': 'text/plain',
+    },
   }).expect(200, 'hello world')
 })
 
 test('text should ignore GET request', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+  const server = createServer(async (req: Request & HasBody<string>, res) => {
     await loggingText(req, res)
 
     res.setHeader('Content-Type', 'text/plain')
@@ -189,13 +189,13 @@ test('text should ignore GET request', async () => {
     method: 'GET',
     headers: {
       Accept: 'text/plain',
-      'Content-Type': 'text/plain'
-    }
+      'Content-Type': 'text/plain',
+    },
   }).expect(200, 'GET is ignored')
 })
 
 const rawInstance = raw()
-const loggingRaw = async (req: ReqWithBody, res: Response) => {
+const loggingRaw = async (req: Request & HasBody<Buffer>, res: Response) => {
   try {
     await rawInstance(req, res, () => undefined)
   } catch (err) {
@@ -204,7 +204,7 @@ const loggingRaw = async (req: ReqWithBody, res: Response) => {
 }
 
 test('should parse raw body', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+  const server = createServer(async (req: Request & HasBody<Buffer>, res) => {
     await loggingRaw(req, res)
 
     res.setHeader('Content-Type', 'text/plain')
@@ -217,13 +217,13 @@ test('should parse raw body', async () => {
     method: 'POST',
     headers: {
       Accept: 'text/plain',
-      'Content-Type': 'text/plain'
-    }
+      'Content-Type': 'text/plain',
+    },
   }).expect(200, 'hello world')
 })
 
 test('raw should ignore GET request', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+  const server = createServer(async (req: Request & HasBody<Buffer>, res) => {
     await loggingRaw(req, res)
 
     res.setHeader('Content-Type', 'text/plain')
@@ -235,13 +235,13 @@ test('raw should ignore GET request', async () => {
     method: 'GET',
     headers: {
       Accept: 'text/plain',
-      'Content-Type': 'text/plain'
-    }
+      'Content-Type': 'text/plain',
+    },
   }).expect(200, 'GET is ignored')
 })
 
 const customInstance = custom((d) => d.toUpperCase())
-const loggingCustom = async (req: ReqWithBody, res: Response) => {
+const loggingCustom = async (req: Request & HasBody<string>, res: Response) => {
   try {
     await customInstance(req, res, () => undefined)
   } catch (err) {
@@ -250,7 +250,7 @@ const loggingCustom = async (req: ReqWithBody, res: Response) => {
 }
 
 test('should parse custom body', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+  const server = createServer(async (req: Request & HasBody<string>, res) => {
     await loggingCustom(req, res)
 
     res.setHeader('Content-Type', 'text/plain')
@@ -263,13 +263,13 @@ test('should parse custom body', async () => {
     method: 'POST',
     headers: {
       Accept: 'text/plain',
-      'Content-Type': 'text/plain'
-    }
+      'Content-Type': 'text/plain',
+    },
   }).expect(200, 'HELLO WORLD')
 })
 
 test('custom should ignore GET request', async () => {
-  const server = createServer(async (req: ReqWithBody, res) => {
+  const server = createServer(async (req: Request & HasBody<string>, res) => {
     await loggingCustom(req, res)
 
     res.setHeader('Content-Type', 'text/plain')
@@ -281,7 +281,7 @@ test('custom should ignore GET request', async () => {
     method: 'GET',
     headers: {
       Accept: 'text/plain',
-      'Content-Type': 'text/plain'
-    }
+      'Content-Type': 'text/plain',
+    },
   }).expect(200, 'GET is ignored')
 })
