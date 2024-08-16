@@ -6,12 +6,7 @@
   "license": "LGPL-3.0-or-later",
   "types": "./dist/index.d.ts",
   "type": "module",
-  "keywords": [
-    "body-parser",
-    "tinyhttp",
-    "http",
-    "body-parsing"
-  ],
+  "keywords": ["body-parser", "tinyhttp", "http", "body-parsing"],
   "engines": {
     "node": ">=20.16"
   },
@@ -28,9 +23,7 @@
     "typescript": "^5.5.3",
     "vitest": "^2.0.5"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "test": "vitest run --dir tests",
     "test:coverage": "vitest run --dir tests --coverage --silent",
