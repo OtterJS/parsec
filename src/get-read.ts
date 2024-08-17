@@ -5,10 +5,11 @@ import { ClientError, ServerError } from '@otterhttp/errors'
 import { encodingExists as charsetExists, decode as iconvDecode } from 'iconv-lite'
 import getRawBody from 'raw-body'
 
+import { alreadyParsed } from '@/utils/already-parsed-symbol'
 import { ClientCharsetError, ClientEncodingError, ParseFailedError, VerifyFailedError } from '@/utils/errors'
 import { getCharset } from '@/utils/get-request-charset'
 import { isFinished } from '@/utils/is-finished'
-import type { HasBody, Request, Response } from './types'
+import type { HasBody, MaybeParsed, Request, Response } from './types'
 
 const supportedEncodings = new Map<string, (req: Request) => { stream: ReadableStream; length?: number | undefined }>([
   [
@@ -101,7 +102,9 @@ const voidConsumeRequestStream = async (req: Request): Promise<void> => {
 export const getRawRead = <T = unknown>(options?: RawReadOptions) => {
   const contentStream = getContentStream(options)
 
-  return async (req: Request & HasBody<T>, res: Response): Promise<Buffer> => {
+  return async (req: Request & HasBody<T> & MaybeParsed, res: Response): Promise<Buffer> => {
+    req[alreadyParsed] = true
+
     if (options?.preVerify != null) {
       try {
         options?.preVerify?.(req, res)

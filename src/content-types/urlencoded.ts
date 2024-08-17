@@ -1,8 +1,9 @@
+import { type ParsedUrlQuery, parse } from 'node:querystring'
 import { ContentType } from '@otterhttp/content-type'
-import { parse, type ParsedUrlQuery } from 'node:querystring'
 
 import { type ReadOptions, getRead } from '@/get-read'
-import type { HasBody, NextFunction, Request, Response } from '@/types'
+import type { HasBody, MaybeParsed, NextFunction, Request, Response } from '@/types'
+import { alreadyParsed } from '@/utils/already-parsed-symbol'
 import { compose } from '@/utils/compose-functions'
 import { ClientCharsetError } from '@/utils/errors'
 import { hasNoBody } from '@/utils/has-no-body'
@@ -47,7 +48,8 @@ export function urlencoded<
   const matcher = options?.matcher ?? typeChecker(ContentType.parse('application/*+x-www-form-urlencoded'))
 
   const read = getRead<ParsedUrlQuery>((x) => parse(x), optionsCopy)
-  return async (req: Req, res: Res, next: NextFunction) => {
+  return async (req: Req & MaybeParsed, res: Res, next: NextFunction) => {
+    if (req[alreadyParsed] === true) return next()
     if (hasNoBody(req.method)) return next()
     if (!matcher(req, res)) return next()
     req.body = await read(req, res)

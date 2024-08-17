@@ -1,7 +1,8 @@
 import { ContentType } from '@otterhttp/content-type'
 
 import { type ReadOptions, getRead } from '@/get-read'
-import type { HasBody, NextFunction, Request, Response } from '@/types'
+import type { HasBody, MaybeParsed, NextFunction, Request, Response } from '@/types'
+import { alreadyParsed } from '@/utils/already-parsed-symbol'
 import { compose } from '@/utils/compose-functions'
 import { ClientCharsetError } from '@/utils/errors'
 import { hasNoBody } from '@/utils/has-no-body'
@@ -92,7 +93,8 @@ export function json<
   }
 
   const read = getRead(parse, optionsCopy)
-  return async (req: Req & HasBody<Body>, res: Res, next: NextFunction) => {
+  return async (req: Req & MaybeParsed, res: Res, next: NextFunction) => {
+    if (req[alreadyParsed] === true) return next()
     if (hasNoBody(req.method)) return next()
     if (!matcher(req, res)) return next()
     req.body = await read(req, res)
