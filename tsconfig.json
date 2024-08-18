@@ -4,7 +4,6 @@
     "target": "esnext",
     "module": "esnext",
     "noEmit": true,
-    "rootDir": "./src",
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
