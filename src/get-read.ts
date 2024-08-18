@@ -1,60 +1,39 @@
-import type { Readable as ReadableStream } from 'node:stream'
+import { PassThrough, type Transform } from 'node:stream'
 import { finished } from 'node:stream/promises'
 import * as zlib from 'node:zlib'
 import { ClientError, ServerError } from '@otterhttp/errors'
+import { parse as parseBytes } from 'bytes'
 import { encodingExists as charsetExists, decode as iconvDecode } from 'iconv-lite'
-import getRawBody from 'raw-body'
 
 import { alreadyParsed } from '@/utils/already-parsed-symbol'
 import { ClientCharsetError, ClientEncodingError, ParseFailedError, VerifyFailedError } from '@/utils/errors'
 import { getCharset } from '@/utils/get-request-charset'
+import { getContentLength } from '@/utils/get-request-content-length'
 import { isFinished } from '@/utils/is-finished'
+import { LengthValidator } from '@/utils/length-validator'
+import { Limiter } from '@/utils/limiter'
+import { RawSink } from '@/utils/raw-sink'
+import { requestPipeline } from '@/utils/request-pipeline'
 import type { HasBody, MaybeParsed, Request, Response } from './types'
 
-const supportedEncodings = new Map<string, (req: Request) => { stream: ReadableStream; length?: number | undefined }>([
-  [
-    'deflate',
-    (req) => {
-      const stream = zlib.createInflate()
-      req.pipe(stream)
-      return { stream }
-    },
-  ],
-  [
-    'gzip',
-    (req) => {
-      const stream = zlib.createGunzip()
-      req.pipe(stream)
-      return { stream }
-    },
-  ],
-  [
-    'br',
-    (req) => {
-      const stream = zlib.createBrotliDecompress()
-      req.pipe(stream)
-      return { stream }
-    },
-  ],
-  [
-    'identity',
-    (req) => {
-      const length: number | undefined = Number(req.headers['content-length'])
-      if (Number.isNaN(length))
-        throw new ClientError("'content-length' header missing or malformed", {
-          statusCode: 400,
-          code: 'ERR_CONTENT_LENGTH_MISSING_OR_MALFORMED',
-        })
-      return { stream: req, length }
-    },
-  ],
+const supportedEncodings = new Map<string, () => Transform>([
+  ['deflate', () => zlib.createInflate()],
+  ['gzip', () => zlib.createGunzip()],
+  ['br', () => zlib.createBrotliDecompress()],
+  ['identity', () => new PassThrough()],
 ])
+
+const limiterSupplier = (limit: number | undefined): Transform => {
+  if (limit == null) return new PassThrough()
+  return new Limiter({ limit })
+}
 
 type ContentStreamOptions = {
   inflate?: boolean
+  limit?: number | string
 }
 
-const getContentStream = (options?: ContentStreamOptions) => {
+const getRawContent = (options?: ContentStreamOptions) => {
   const encodingUnsupported = (encoding: string) => {
     return new ClientEncodingError('content encoding unsupported', {
       statusCode: 415,
@@ -63,15 +42,25 @@ const getContentStream = (options?: ContentStreamOptions) => {
     })
   }
 
-  return (req: Request) => {
+  const limit: number | undefined = options?.limit != null ? parseBytes(options.limit) : undefined
+
+  return async (req: Request): Promise<Buffer> => {
     const encoding = (req.headers['content-encoding'] || 'identity').toLowerCase()
 
     if (options?.inflate === false && encoding !== 'identity') throw encodingUnsupported(encoding)
 
-    const encodingStreamFunction = supportedEncodings.get(encoding)
-    if (encodingStreamFunction == null) throw encodingUnsupported(encoding)
+    const encodingTransformSupplier = supportedEncodings.get(encoding)
+    if (encodingTransformSupplier == null) throw encodingUnsupported(encoding)
 
-    return encodingStreamFunction(req)
+    const sink = new RawSink()
+    await requestPipeline(req, [
+      new LengthValidator({ expectedLength: getContentLength(req) }),
+      encodingTransformSupplier(),
+      limiterSupplier(limit),
+      sink,
+    ])
+
+    return sink.content
   }
 }
 
@@ -100,7 +89,7 @@ const voidConsumeRequestStream = async (req: Request): Promise<void> => {
 }
 
 export const getRawRead = <T = unknown>(options?: RawReadOptions) => {
-  const contentStream = getContentStream(options)
+  const rawContent = getRawContent(options)
 
   return async (req: Request & HasBody<T> & MaybeParsed, res: Response): Promise<Buffer> => {
     req[alreadyParsed] = true
@@ -117,17 +106,13 @@ export const getRawRead = <T = unknown>(options?: RawReadOptions) => {
       }
     }
 
-    const { stream, length } = contentStream(req)
-
     let bodyBlob: Buffer
     try {
-      bodyBlob = await getRawBody(stream, { limit: options?.limit, length })
+      bodyBlob = await rawContent(req)
     } catch (err) {
-      stream.destroy()
-
       await voidConsumeRequestStream(req)
       if (err instanceof Error)
-        throw new ClientError('Body pre-verification failed', {
+        throw new ClientError('Failed to read raw body', {
           statusCode: 400,
           code: 'ERR_RAW_BODY_READ_FAILED',
           cause: err,
