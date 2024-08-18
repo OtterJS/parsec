@@ -23,17 +23,23 @@ const supportedEncodings = new Map<string, () => Transform>([
   ['identity', () => new PassThrough()],
 ])
 
+const lengthValidatorSupplier = (expectedLength: number | undefined): Transform => {
+  if (expectedLength == null) return new PassThrough()
+  return new LengthValidator({ expectedLength })
+}
+
 const limiterSupplier = (limit: number | undefined): Transform => {
   if (limit == null) return new PassThrough()
   return new Limiter({ limit })
 }
 
-type ContentStreamOptions = {
+type StreamRawContentOptions = {
   inflate?: boolean
   limit?: number | string
+  allowChunkedEncoding?: boolean
 }
 
-const getRawContent = (options?: ContentStreamOptions) => {
+const getRawContentStreamer = (options?: StreamRawContentOptions) => {
   const encodingUnsupported = (encoding: string) => {
     return new ClientEncodingError('content encoding unsupported', {
       statusCode: 415,
@@ -54,7 +60,7 @@ const getRawContent = (options?: ContentStreamOptions) => {
 
     const sink = new RawSink()
     await requestPipeline(req, [
-      new LengthValidator({ expectedLength: getContentLength(req) }),
+      lengthValidatorSupplier(getContentLength(req, options)),
       encodingTransformSupplier(),
       limiterSupplier(limit),
       sink,
@@ -74,10 +80,9 @@ type RawVerifyFunction<Req extends Request & HasBody = Request & HasBody, Res ex
   buf: Buffer,
 ) => void | Promise<void>
 
-export type RawReadOptions = ContentStreamOptions & {
+export type RawReadOptions = StreamRawContentOptions & {
   preVerify?: RawPreVerifyFunction
   verify?: RawVerifyFunction
-  limit?: string | number
 }
 
 const voidConsumeRequestStream = async (req: Request): Promise<void> => {
@@ -89,7 +94,7 @@ const voidConsumeRequestStream = async (req: Request): Promise<void> => {
 }
 
 export const getRawRead = <T = unknown>(options?: RawReadOptions) => {
-  const rawContent = getRawContent(options)
+  const streamRawContent = getRawContentStreamer(options)
 
   return async (req: Request & HasBody<T> & MaybeParsed, res: Response): Promise<Buffer> => {
     req[alreadyParsed] = true
@@ -108,7 +113,7 @@ export const getRawRead = <T = unknown>(options?: RawReadOptions) => {
 
     let bodyBlob: Buffer
     try {
-      bodyBlob = await rawContent(req)
+      bodyBlob = await streamRawContent(req)
     } catch (err) {
       await voidConsumeRequestStream(req)
       if (err instanceof Error)
