@@ -2,7 +2,10 @@ import { ClientError } from '@otterhttp/errors'
 
 import type { Request } from '@/types'
 
-export const getContentLength = (request: Request, { allowChunkedEncoding = true }: { allowChunkedEncoding?: boolean} = {}): number | undefined => {
+export const getContentLength = (
+  request: Request,
+  { allowChunkedEncoding = true }: { allowChunkedEncoding?: boolean } = {},
+): number | undefined => {
   const length: number | undefined = Number(request.headers['content-length'])
   if (Number.isNaN(length)) {
     if (allowChunkedEncoding) return undefined

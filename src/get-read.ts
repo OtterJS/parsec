@@ -1,7 +1,7 @@
 import { PassThrough, type Transform } from 'node:stream'
 import { finished } from 'node:stream/promises'
 import * as zlib from 'node:zlib'
-import { ClientError, ServerError } from '@otterhttp/errors'
+import { ClientError, HttpError, ServerError } from '@otterhttp/errors'
 import { parse as parseBytes } from 'bytes'
 import { encodingExists as charsetExists, decode as iconvDecode } from 'iconv-lite'
 
@@ -101,8 +101,9 @@ export const getRawRead = <T = unknown>(options?: RawReadOptions) => {
 
     if (options?.preVerify != null) {
       try {
-        options?.preVerify?.(req, res)
+        await options?.preVerify?.(req, res)
       } catch (err) {
+        if (err instanceof HttpError) throw err
         throw new ClientError('Body pre-verification failed', {
           statusCode: 403,
           code: 'ERR_ENTITY_PRE_VERIFY_FAILED',
@@ -116,6 +117,7 @@ export const getRawRead = <T = unknown>(options?: RawReadOptions) => {
       bodyBlob = await streamRawContent(req)
     } catch (err) {
       await voidConsumeRequestStream(req)
+      if (err instanceof HttpError) throw err
       if (err instanceof Error)
         throw new ClientError('Failed to read raw body', {
           statusCode: 400,
@@ -127,8 +129,9 @@ export const getRawRead = <T = unknown>(options?: RawReadOptions) => {
 
     if (options?.verify != null) {
       try {
-        options?.verify?.(req, res, bodyBlob)
+        await options?.verify?.(req, res, bodyBlob)
       } catch (err) {
+        if (err instanceof HttpError) throw err
         throw new VerifyFailedError('Body verification failed', {
           statusCode: 403,
           body: bodyBlob,
@@ -181,8 +184,9 @@ export const getRead = <T = unknown>(parseFunction: (body: string) => T, options
 
     if (options?.preVerify != null) {
       try {
-        options?.preVerify?.(req, res, requestCharset)
+        await options?.preVerify?.(req, res, requestCharset)
       } catch (err) {
+        if (err instanceof HttpError) throw err
         throw new ClientError('Body pre-verification failed', {
           statusCode: 403,
           code: 'ERR_ENTITY_PRE_VERIFY_FAILED',
@@ -197,6 +201,7 @@ export const getRead = <T = unknown>(parseFunction: (body: string) => T, options
       try {
         verify(req, res, bodyBlob, requestCharset)
       } catch (err) {
+        if (err instanceof HttpError) throw err
         throw new VerifyFailedError('Body verification failed', {
           statusCode: 403,
           body: bodyBlob,
@@ -222,6 +227,7 @@ export const getRead = <T = unknown>(parseFunction: (body: string) => T, options
     try {
       return parseFunction(body)
     } catch (err) {
+      if (err instanceof HttpError) throw err
       throw new ParseFailedError('Body parsing failed', {
         statusCode: 400,
         body,
