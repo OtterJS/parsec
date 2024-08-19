@@ -1,14 +1,18 @@
 import * as http from 'node:http'
+import zlib from "node:zlib"
 import { HttpError } from '@otterhttp/errors'
-import { expect, it } from 'vitest'
+import { afterEach, assert, describe, expect, it, vi } from 'vitest'
 
-import { type HasBody, type Request, type Response, json } from '@/index'
+import "./utils/mock-get-content-length"
+
+import { type HasBody, type Request, type Response, type JsonBodyParsingOptions, json } from '@/index'
+import { getContentLength } from "@/utils/get-request-content-length";
 
 type FetchInit = Parameters<typeof fetch>[1]
 
-const jsonInstance = json()
-
-function createServer() {
+function createServer(opts?: JsonBodyParsingOptions) {
+  const jsonInstance = json(opts)
+  
   return http.createServer(async (req: Request & HasBody, res: Response) => {
     function next() {
       res.statusCode = 200
@@ -29,8 +33,8 @@ function createServer() {
   })
 }
 
-function createFetch() {
-  const server = createServer()
+function createFetch(opts?: JsonBodyParsingOptions) {
+  const server = createServer(opts)
   server.listen()
 
   const address = server.address()
@@ -39,6 +43,10 @@ function createFetch() {
 
   return async (init: FetchInit) => await fetch(`http://localhost:${address.port}`, init)
 }
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 it('should parse JSON body', async () => {
   const fetch = createFetch()
@@ -78,19 +86,19 @@ it('should handle missing body', async () => {
   await expect(response.json()).resolves.toEqual({})
 })
 
-it('should 400 when body consists only of whitespace', async () => {
+it('should 400 when content-length mismatches actual body length', async () => {
+  vi.mocked(getContentLength).mockReturnValue(3)
+  
   const fetch = createFetch()
   const response = await fetch({
     method: 'POST',
-    body: ' \t\t\n   ',
+    body: JSON.stringify({ foo: "bar" }),
     headers: {
       'Content-Type': 'application/json',
-    },
+    }
   })
   expect(response.status).toBe(400)
 })
-
-it('should 400 when content-length mismatches actual body length', async () => {})
 
 it('should not parse json body with no content-type headers', async () => {
   const fetch = createFetch()
@@ -103,11 +111,227 @@ it('should not parse json body with no content-type headers', async () => {
   await expect(response.text()).resolves.toEqual('')
 })
 
-it('should ignore GET method', async () => {
+it('should ignore GET requests', async () => {
   const fetch = createFetch()
   const response = await fetch({
     method: 'GET',
   })
   expect(response.status).toBe(200)
   await expect(response.text()).resolves.toEqual('')
+})
+
+describe("with invalid JSON body", () => {
+  it('should 400 when body consists only of whitespace', async () => {
+    const fetch = createFetch()
+    const response = await fetch({
+      method: 'POST',
+      body: ' \t\t\n   ',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    expect(response.status).toBe(400)
+  })
+  
+  it("should 400 when body contains a bad token", async () => {
+    const fetch = createFetch()
+    const response = await fetch({
+      method: 'POST',
+      body: "{:",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    expect(response.status).toBe(400)
+  })
+  
+  it("should 400 when body ends prematurely", async () => {
+    const fetch = createFetch()
+    const response = await fetch({
+      method: 'POST',
+      body: "{:",
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    expect(response.status).toBe(400)
+  })
+})
+
+describe("'limit' option", () => {
+  
+})
+
+describe("'inflate' option", () => {
+  
+})
+
+describe("'strict' option", () => {
+  
+})
+
+describe("'verify' option", () => {
+  
+})
+
+describe("relating to character sets", () => {
+  it("should parse JSON content that uses utf-8 charset", async () => {
+    const fetch = createFetch()
+    const response = await fetch({
+      body: JSON.stringify({ hello: 'world' }),
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+      },
+    })
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({ hello: 'world' })
+  })
+  
+  it("should 415 when provided JSON content that does not use utf-8 charset", async () => {
+    const fetch = createFetch()
+    const response = await fetch({
+      body: JSON.stringify({ hello: 'world' }),
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json; charset=utf-16",
+      },
+    })
+    expect(response.status).toBe(415)
+  })
+  
+  it("should assume JSON content that does not specify a charset uses utf-8", async () => {
+    const fetch = createFetch()
+    const response = await fetch({
+      body: JSON.stringify({ hello: 'world' }),
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({ hello: 'world' })
+  })
+})
+
+describe("with encoded JSON body", () => {
+  it("should support gzip encoding", async () => {
+    const obj = { foo: "bar", bar: "baz", baz: "quux" }
+    const content = JSON.stringify(obj)
+    const encodedContent = zlib.gzipSync(content)
+    assert(Buffer.compare(Buffer.from(content), encodedContent) !== 0)
+    
+    const fetch = createFetch()
+    const response = await fetch({
+      method: 'POST',
+      body: encodedContent,
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Encoding": "gzip",
+      },
+    })
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual(obj)
+  })
+  
+  it("should support deflate encoding", async () => {
+    const obj = { foo: "bar", bar: "baz", baz: "quux" }
+    const content = JSON.stringify(obj)
+    const encodedContent = zlib.deflateSync(content)
+    assert(Buffer.compare(Buffer.from(content), encodedContent) !== 0)
+    
+    const fetch = createFetch()
+    const response = await fetch({
+      method: 'POST',
+      body: encodedContent,
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Encoding": "deflate",
+      },
+    })
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual(obj)
+  })
+  
+  it("should support brotli encoding", async () => {
+    const obj = { foo: "bar", bar: "baz", baz: "quux" }
+    const content = JSON.stringify(obj)
+    const encodedContent = zlib.brotliCompressSync(content)
+    assert(Buffer.compare(Buffer.from(content), encodedContent) !== 0)
+    
+    const fetch = createFetch()
+    const response = await fetch({
+      method: 'POST',
+      body: encodedContent,
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Encoding": "br",
+      },
+    })
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual(obj)
+  })
+  
+  it("should 415 when encoding is unknown", async () => {
+    const fetch = createFetch()
+    const response = await fetch({
+      method: 'POST',
+      body: Buffer.from('0000000', 'hex'),
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Encoding": "foobarbaz",
+      },
+    })
+    expect(response.status).toBe(415)
+  })
+  
+  it("should 400 when encoded content is malformed", async () => {
+    const fetch = createFetch()
+    const response = await fetch({
+      method: 'POST',
+      body: Buffer.from('1f8b080000000000000bedc1010d000000c2a0f74f6d0f071400000000000000', 'hex'),
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Encoding": "gzip",
+      },
+    })
+    expect(response.status).toBe(400)
+  })
+  
+  it("should validate content-length of deflated content", async () => {
+    const content = JSON.stringify({ foo: "bar", bar: "baz", baz: "quux" })
+    vi.mocked(getContentLength).mockReturnValue(content.length)
+    
+    const encodedContent = zlib.gzipSync(content)
+    assert(encodedContent.byteLength != content.length)
+    
+    const fetch = createFetch()
+    const response = await fetch({
+      method: 'POST',
+      body: encodedContent,
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Encoding": "gzip",
+      },
+    })
+    expect(response.status).toBe(400)
+  })
+  
+  it("should apply 'limit' option to inflated content", async () => {
+    // inflated data size exceeds 1kb, but gzipped size is lesser than 1kb
+    const fetch = createFetch({ limit: "1kb" })
+    const response = await fetch({
+      method: 'POST',
+      body: Buffer.concat([
+        Buffer.from('1f8b080000000000000bedc1010d000000c2a0f74f6d0f071400000000000000', 'hex'),
+        Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex'),
+        Buffer.from('0000000000000000004f0625b3b71650c30000', 'hex'),
+      ]),
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Encoding": "gzip",
+      },
+    })
+    expect(response.status).toBe(413)
+  })
 })
