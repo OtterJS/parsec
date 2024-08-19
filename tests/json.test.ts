@@ -3,7 +3,7 @@ import zlib from 'node:zlib'
 import { HttpError } from '@otterhttp/errors'
 import { assert, afterEach, describe, expect, it, vi } from 'vitest'
 
-import './utils/mock-get-content-length'
+import './test-utils/mock-get-content-length'
 
 import { type HasBody, type JsonBodyParsingOptions, type Request, type Response, json } from '@/index'
 import { getContentLength } from '@/utils/get-request-content-length'
