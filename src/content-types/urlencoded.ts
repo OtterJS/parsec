@@ -9,7 +9,7 @@ import { ClientCharsetError } from '@/utils/errors'
 import { hasNoBody } from '@/utils/has-no-body'
 import { typeChecker } from '@/utils/type-checker'
 
-type UrlencodedBodyParsingOptions<
+export type UrlencodedBodyParsingOptions<
   Req extends Request & HasBody<ParsedUrlQuery> = Request & HasBody<ParsedUrlQuery>,
   Res extends Response<Req> = Response<Req>,
 > = Omit<ReadOptions, 'defaultCharset'> & {

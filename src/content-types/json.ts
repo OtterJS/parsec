@@ -8,7 +8,7 @@ import { ClientCharsetError } from '@/utils/errors'
 import { hasNoBody } from '@/utils/has-no-body'
 import { typeChecker } from '@/utils/type-checker'
 
-type JsonBodyParsingOptions<
+export type JsonBodyParsingOptions<
   Body = unknown,
   Req extends Request & HasBody<Body> = Request & HasBody<Body>,
   Res extends Response<Req> = Response<Req>,
