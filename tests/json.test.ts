@@ -158,13 +158,13 @@ describe('with invalid JSON body', () => {
   })
 })
 
-describe("'limit' option", () => {})
+describe.skip("'limit' option", () => {})
 
-describe("'inflate' option", () => {})
+describe.skip("'inflate' option", () => {})
 
-describe("'strict' option", () => {})
+describe.skip("'strict' option", () => {})
 
-describe("'verify' option", () => {})
+describe.skip("'verify' option", () => {})
 
 describe('relating to character sets', () => {
   it('should parse JSON content that uses utf-8 charset', async () => {
