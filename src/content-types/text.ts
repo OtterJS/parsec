@@ -23,9 +23,7 @@ export type TextBodyParsingOptions<
 export function text<
   Req extends Request & HasBody<string> = Request & HasBody<string>,
   Res extends Response<Req> = Response<Req>,
->(
-  options?: TextBodyParsingOptions<Req, Res>,
-) {
+>(options?: TextBodyParsingOptions<Req, Res>) {
   const optionsCopy: ReadOptions = Object.assign({}, options)
   optionsCopy.limit ??= '100kb'
   optionsCopy.inflate ??= true

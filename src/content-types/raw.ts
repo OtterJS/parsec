@@ -1,4 +1,4 @@
-import {getRawRead, type RawReadOptions} from '@/get-read'
+import { type RawReadOptions, getRawRead } from '@/get-read'
 import type { HasBody, MaybeParsed, NextFunction, Request, Response } from '@/types'
 import { alreadyParsed } from '@/utils/already-parsed-symbol'
 import { hasNoBody } from '@/utils/has-no-body'
@@ -24,9 +24,9 @@ export function raw<
   const optionsCopy: RawReadOptions = Object.assign({}, options)
   optionsCopy.limit ??= '100kb'
   optionsCopy.inflate ??= true
-  
+
   const matcher = options?.matcher ?? (() => true)
-  
+
   const read = getRawRead<Buffer>(options)
   return async (req: Req & MaybeParsed, res: Res, next: NextFunction) => {
     if (req[alreadyParsed] === true) return next()
