@@ -1,5 +1,5 @@
 import { type ParsedHeaders, parseHttpHeader } from '@/parsers/http-headers'
-import { splitBuffer } from '@/utils/split-buffer'
+import { splitMultipart } from '@/utils/split-multipart'
 import { ClientError } from '@otterhttp/errors'
 
 export type ParsedMultipartDataPart = {
@@ -15,8 +15,7 @@ const CRLF = Buffer.from('\r\n')
  * @see [RFC 2046 Multipart Media Type](https://datatracker.ietf.org/doc/html/rfc2046#section-5.1)
  */
 export function parseMultipart(body: Buffer, boundary: string): ParsedMultipartData {
-  const delimiter = Buffer.from(`\r\n--${boundary}\r\n`)
-  const parts = splitBuffer(body, delimiter)
+  const parts = splitMultipart(body, boundary)
   parts.shift() // ignore the preamble
   parts.pop() // ignore the epilogue
   return parts.map(parseMultipartPart)
