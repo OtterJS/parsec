@@ -27,7 +27,7 @@ export function raw<
 
   const matcher = options?.matcher ?? (() => true)
 
-  const read = getRawRead<Buffer>(options)
+  const read = getRawRead(options)
   return async (req: Req & MaybeParsed, res: Res, next: NextFunction) => {
     if (req[alreadyParsed] === true) return next()
     if (hasNoBody(req.method)) return next()
