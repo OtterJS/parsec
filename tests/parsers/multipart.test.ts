@@ -59,65 +59,40 @@ it('should parse valid multipart with multiple parts', () => {
 })
 
 it('should parse valid multipart form data with blank part', () => {
-  const multipart = [
-    'preamble',
-    '--boundary',
-    '',
-    '',
-    '--boundary--',
-    'epilogue',
-  ].join('\r\n')
+  const multipart = ['preamble', '--boundary', '', '', '--boundary--', 'epilogue'].join('\r\n')
 
   expect(parseMultipart(Buffer.from(multipart), 'boundary')).toEqual([
     {
       headers: {},
-      content: Buffer.from(""),
-    }
+      content: Buffer.from(''),
+    },
   ])
 })
 
 it('should parse valid multipart form data with no preamble', () => {
-  const multipart = [
-    '--boundary',
-    '',
-    '',
-    '--boundary--',
-    'epilogue',
-  ].join('\r\n')
+  const multipart = ['--boundary', '', '', '--boundary--', 'epilogue'].join('\r\n')
 
   expect(parseMultipart(Buffer.from(multipart), 'boundary')).toEqual([
     {
       headers: {},
-      content: Buffer.from(""),
-    }
+      content: Buffer.from(''),
+    },
   ])
 })
 
 it('should parse valid multipart form data with no epilogue', () => {
-  const multipart = [
-    'preamble',
-    '--boundary',
-    '',
-    '',
-    '--boundary--',
-  ].join('\r\n')
+  const multipart = ['preamble', '--boundary', '', '', '--boundary--'].join('\r\n')
 
   expect(parseMultipart(Buffer.from(multipart), 'boundary')).toEqual([
     {
       headers: {},
-      content: Buffer.from(""),
-    }
+      content: Buffer.from(''),
+    },
   ])
 })
 
 it('should reject multipart form data with missing CRLF to separate headerlines from content', () => {
-  const multipart = [
-    'preamble',
-    '--boundary',
-    '',
-    '--boundary--',
-    'epilogue',
-  ].join('\r\n')
+  const multipart = ['preamble', '--boundary', '', '--boundary--', 'epilogue'].join('\r\n')
 
   expect(() => {
     parseMultipart(Buffer.from(multipart), 'boundary')
@@ -125,15 +100,7 @@ it('should reject multipart form data with missing CRLF to separate headerlines 
 })
 
 it('should reject multipart form data with invalid part header-lines', () => {
-  const multipart = [
-    'preamble',
-    '--boundary',
-    '--boundary',
-    '',
-    'foobar',
-    '--boundary--',
-    'epilogue',
-  ].join('\r\n')
+  const multipart = ['preamble', '--boundary', '--boundary', '', 'foobar', '--boundary--', 'epilogue'].join('\r\n')
 
   expect(() => {
     parseMultipart(Buffer.from(multipart), 'boundary')
@@ -141,11 +108,7 @@ it('should reject multipart form data with invalid part header-lines', () => {
 })
 
 it('should reject multipart form data with no parts', () => {
-  const multipart = [
-    'preamble',
-    '--boundary--',
-    'epilogue'
-  ].join('\r\n')
+  const multipart = ['preamble', '--boundary--', 'epilogue'].join('\r\n')
 
   expect(() => {
     parseMultipart(Buffer.from(multipart), 'boundary')
@@ -153,14 +116,7 @@ it('should reject multipart form data with no parts', () => {
 })
 
 it('should reject multipart form data with no close delimiter', () => {
-  const multipart = [
-    'preamble',
-    '--boundary',
-    '',
-    '',
-    '--boundary',
-    'epilogue',
-  ].join('\r\n')
+  const multipart = ['preamble', '--boundary', '', '', '--boundary', 'epilogue'].join('\r\n')
 
   expect(() => {
     parseMultipart(Buffer.from(multipart), 'boundary')
@@ -168,14 +124,7 @@ it('should reject multipart form data with no close delimiter', () => {
 })
 
 it('should reject multipart form data with non-linear-whitespace characters on a boundary line', () => {
-  const multipart = [
-    'preamble',
-    '--boundary  eeee',
-    '',
-    '',
-    '--boundary--',
-    'epilogue',
-  ].join('\r\n')
+  const multipart = ['preamble', '--boundary  eeee', '', '', '--boundary--', 'epilogue'].join('\r\n')
 
   expect(() => {
     parseMultipart(Buffer.from(multipart), 'boundary')
@@ -183,17 +132,7 @@ it('should reject multipart form data with non-linear-whitespace characters on a
 })
 
 it('should reject multipart form data with parts after a close delimiter', () => {
-  const multipart = [
-    'preamble',
-    '--boundary',
-    '',
-    '',
-    '--boundary--',
-    '',
-    '',
-    '--boundary',
-    'epilogue',
-  ].join('\r\n')
+  const multipart = ['preamble', '--boundary', '', '', '--boundary--', '', '', '--boundary', 'epilogue'].join('\r\n')
 
   expect(() => {
     parseMultipart(Buffer.from(multipart), 'boundary')
@@ -201,13 +140,7 @@ it('should reject multipart form data with parts after a close delimiter', () =>
 })
 
 it('should reject multipart form data with non-linear-whitespace characters on a boundary line with no preamble', () => {
-  const multipart = [
-    '--boundary  eeee',
-    '',
-    '',
-    '--boundary--',
-    'epilogue',
-  ].join('\r\n')
+  const multipart = ['--boundary  eeee', '', '', '--boundary--', 'epilogue'].join('\r\n')
 
   expect(() => {
     parseMultipart(Buffer.from(multipart), 'boundary')

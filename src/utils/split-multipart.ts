@@ -1,18 +1,18 @@
 import { Buffer } from 'node:buffer'
-import { ClientError } from "@otterhttp/errors";
+import { ClientError } from '@otterhttp/errors'
 
-const doubleHyphen = Buffer.from("--")
-const CRLF = Buffer.from("\r\n")
-const linearWhitespace = Buffer.from(" \t")
+const doubleHyphen = Buffer.from('--')
+const CRLF = Buffer.from('\r\n')
+const linearWhitespace = Buffer.from(' \t')
 
 function isWhitespaceCharCode(charCode: number | undefined): boolean {
   return charCode === linearWhitespace.at(0) || charCode === linearWhitespace.at(1)
 }
 
 function fail(): never {
-  throw new ClientError("Invalid multipart data", {
+  throw new ClientError('Invalid multipart data', {
     statusCode: 400,
-    code: "ERR_INVALID_MULTIPART_DATA",
+    code: 'ERR_INVALID_MULTIPART_DATA',
   })
 }
 
