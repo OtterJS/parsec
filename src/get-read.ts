@@ -93,10 +93,10 @@ const voidConsumeRequestStream = async (req: Request): Promise<void> => {
   } catch {}
 }
 
-export const getRawRead = <T = unknown>(options?: RawReadOptions) => {
+export const getRawRead = (options?: RawReadOptions) => {
   const streamRawContent = getRawContentStreamer(options)
 
-  return async (req: Request & HasBody<T> & MaybeParsed, res: Response): Promise<Buffer> => {
+  return async (req: Request & MaybeParsed, res: Response): Promise<Buffer> => {
     req[alreadyParsed] = true
 
     if (options?.preVerify != null) {
@@ -163,7 +163,7 @@ export type ReadOptions = Omit<RawReadOptions, 'verify' | 'preVerify'> & {
   defaultCharset?: string
 }
 
-export const getRead = <T = unknown>(parseFunction: (body: string) => T, options?: ReadOptions) => {
+export const getRead = <T = unknown>(parseFunction: (body: string) => T | Promise<T>, options?: ReadOptions) => {
   const { defaultCharset = 'utf-8', preVerify, verify, ...restOptions } = options ?? {}
 
   if (!charsetExists(defaultCharset))
@@ -171,7 +171,7 @@ export const getRead = <T = unknown>(parseFunction: (body: string) => T, options
 
   const rawRead = getRawRead(restOptions)
 
-  return async (req: Request & HasBody<T>, res: Response): Promise<T> => {
+  return async (req: Request, res: Response): Promise<T> => {
     let requestCharset = getCharset(req)
 
     if (requestCharset != null && !charsetExists(requestCharset)) {
@@ -182,9 +182,9 @@ export const getRead = <T = unknown>(parseFunction: (body: string) => T, options
       })
     }
 
-    if (options?.preVerify != null) {
+    if (preVerify != null) {
       try {
-        await options?.preVerify?.(req, res, requestCharset)
+        await preVerify(req, res, requestCharset)
       } catch (err) {
         if (err instanceof HttpError) throw err
         throw new ClientError('Body pre-verification failed', {
@@ -199,7 +199,7 @@ export const getRead = <T = unknown>(parseFunction: (body: string) => T, options
 
     if (verify != null) {
       try {
-        verify(req, res, bodyBlob, requestCharset)
+        await verify(req, res, bodyBlob, requestCharset)
       } catch (err) {
         if (err instanceof HttpError) throw err
         throw new VerifyFailedError('Body verification failed', {
@@ -225,7 +225,7 @@ export const getRead = <T = unknown>(parseFunction: (body: string) => T, options
     }
 
     try {
-      return parseFunction(body)
+      return await parseFunction(body)
     } catch (err) {
       if (err instanceof HttpError) throw err
       throw new ParseFailedError('Body parsing failed', {
