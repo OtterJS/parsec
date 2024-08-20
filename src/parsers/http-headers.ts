@@ -1,5 +1,14 @@
 import type { IncomingHttpHeaders } from 'node:http'
 import { ClientError } from '@otterhttp/errors'
+import { type ContentType, parse as parseContentType } from "@otterhttp/content-type"
+import { type ContentDisposition, parse as parseContentDisposition } from "@otterhttp/content-disposition";
+
+import type { Omit } from "@/types";
+
+export type ParsedHeaders = Omit<IncomingHttpHeaders, 'content-type' | 'content-disposition'> & {
+  'content-type'?: ContentType | undefined
+  'content-disposition'?: ContentDisposition | undefined
+}
 
 /**
  * [RFC 9110, Collected ABNF]{@link https://www.rfc-editor.org/rfc/rfc9110.html#name-collected-abnf}
@@ -110,6 +119,7 @@ function matchKnownFields(field: string, lowercased?: boolean) {
       if (field === 'X-Forwarded-Proto' || field === 'x-forwarded-proto') return '\u0000x-forwarded-proto'
       break
     case 19:
+      if (field === "Content-Disposition" || field === "content-disposition") return 'content-disposition'
       if (field === 'Proxy-Authorization' || field === 'proxy-authorization') return 'proxy-authorization'
       if (field === 'If-Unmodified-Since' || field === 'if-unmodified-since') return 'if-unmodified-since'
       break
@@ -123,31 +133,41 @@ function matchKnownFields(field: string, lowercased?: boolean) {
 /**
  * @see [node/lib/_http_incoming.js]{@link https://github.com/nodejs/node/blob/561bc87c7607208f0d3db6dcd9231efeb48cfe2f/lib/_http_incoming.js#L382-L414}
  */
-function addHeader(field: string, value: string, dest: IncomingHttpHeaders): void {
+function addHeader(field: string, value: string, dest: ParsedHeaders): void {
   field = matchKnownFields(field)
   const flag = field.charCodeAt(0)
+  // Make a delimited list
   if (flag === 0 || flag === 2) {
     field = field.slice(1)
-    // Make a delimited list
     if (typeof dest[field] === 'string') {
       dest[field] += (flag === 0 ? ', ' : '; ') + value
     } else {
       dest[field] = value
     }
-  } else if (flag === 1) {
-    // Array header -- only Set-Cookie at the moment
+  } 
+  // Array header -- only Set-Cookie at the moment
+  else if (flag === 1) {
     if (dest['set-cookie'] !== undefined) {
       dest['set-cookie'].push(value)
     } else {
       dest['set-cookie'] = [value]
     }
-  } else if (dest[field] === undefined) {
-    // Drop duplicates
+  } 
+  // Drop duplicates
+  else if (dest[field] === undefined) {
+    if (field === "content-type") {
+      dest["content-type"] = parseContentType(value)
+      return
+    }
+    if (field === "content-disposition") {
+      dest["content-disposition"] = parseContentDisposition(value)
+      return
+    }
     dest[field] = value
   }
 }
 
-export function parseHttpHeader(headerLine: string, dest: IncomingHttpHeaders): void {
+export function parseHttpHeader(headerLine: string, dest: ParsedHeaders): void {
   function fail(): never {
     throw new ClientError('Invalid header field-line', {
       code: 'ERR_INVALID_HEADER_LINE',

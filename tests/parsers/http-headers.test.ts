@@ -1,38 +1,37 @@
-import type { IncomingHttpHeaders } from "node:http"
 import { it, expect } from "vitest"
 
-import { parseHttpHeader } from "@/parsers/http-headers";
+import { parseHttpHeader, type ParsedHeaders } from "@/parsers/http-headers";
 
 it("should parse valid headers", () => {
-  const parsed: IncomingHttpHeaders = {}
+  const parsed: ParsedHeaders = {}
   
-  parseHttpHeader("content-type: application/json", parsed)
-  parseHttpHeader("content-disposition: attachment; filename=foo.json", parsed)
+  parseHttpHeader("x-content-type: application/json", parsed)
+  parseHttpHeader("x-content-disposition: attachment; filename=foo.json", parsed)
   parseHttpHeader("content-length: 24", parsed)
   
   expect(parsed).toEqual({
-    "content-type": "application/json",
-    "content-disposition": "attachment; filename=foo.json",
+    "x-content-type": "application/json",
+    "x-content-disposition": "attachment; filename=foo.json",
     "content-length": "24",
   })
 })
 
 it("should lower-case field names", () => {
-  const parsed: IncomingHttpHeaders = {}
+  const parsed: ParsedHeaders = {}
   
-  parseHttpHeader("Content-Type: application/json", parsed)
-  parseHttpHeader("Content-Disposition: attachment; filename=foo.json", parsed)
+  parseHttpHeader("x-Content-Type: application/json", parsed)
+  parseHttpHeader("x-Content-Disposition: attachment; filename=foo.json", parsed)
   parseHttpHeader("Content-LenGtH: 24", parsed)
   
   expect(parsed).toEqual({
-    "content-type": "application/json",
-    "content-disposition": "attachment; filename=foo.json",
+    "x-content-type": "application/json",
+    "x-content-disposition": "attachment; filename=foo.json",
     "content-length": "24",
   })
 })
 
 it("should accept single-character field values", () => {
-  const parsed: IncomingHttpHeaders = {}
+  const parsed: ParsedHeaders = {}
   
   parseHttpHeader("foo: 1", parsed)
   parseHttpHeader("bar: 2", parsed)
@@ -46,15 +45,15 @@ it("should accept single-character field values", () => {
 })
 
 it("should trim optional whitespace around header value", () => {
-  const parsed: IncomingHttpHeaders = {}
+  const parsed: ParsedHeaders = {}
   
-  parseHttpHeader("Content-Type: \t\t application/json\t  ", parsed)
-  parseHttpHeader("Content-Disposition:\t \tattachment;\tfilename=foo.json  ", parsed)
+  parseHttpHeader("x-Content-Type: \t\t application/json\t  ", parsed)
+  parseHttpHeader("x-Content-Disposition:\t \tattachment;\tfilename=foo.json  ", parsed)
   parseHttpHeader("Content-LenGtH:\t24", parsed)
   
   expect(parsed).toEqual({
-    "content-type": "application/json",
-    "content-disposition": "attachment;\tfilename=foo.json",
+    "x-content-type": "application/json",
+    "x-content-disposition": "attachment;\tfilename=foo.json",
     "content-length": "24",
   })
 })
