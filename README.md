@@ -15,6 +15,7 @@
   - JSON
   - urlencoded
   - text
+  - multipart/form-data
 - 🔥 no dependencies
 - ✨ [otterhttp](https://github.com/otterjs/otterhttp) support
 - ⚡ 30% faster than body-parser
