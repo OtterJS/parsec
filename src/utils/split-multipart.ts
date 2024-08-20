@@ -19,9 +19,7 @@ export function splitMultipart(toSplit: Buffer, boundary: Buffer): Buffer[]
 export function splitMultipart(toSplit: Buffer, boundary: string, encoding?: BufferEncoding): Buffer[]
 export function splitMultipart(toSplit: Buffer, boundary: string | Buffer, encoding?: BufferEncoding): Buffer[] {
   const parts: Buffer[] = []
-  if (!(boundary instanceof Buffer)) {
-    boundary = Buffer.from(`\r\n--${boundary}`, encoding)
-  }
+  boundary = Buffer.from(`\r\n--${boundary}`, encoding)
 
   let currentIndex = 0
   let previousPartBeginIndex = 0
