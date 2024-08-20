@@ -17,7 +17,8 @@ function fail(): never {
 }
 
 /**
- * Split a buffer's contents by some delimiter.
+ * Split a buffer containing multipart/* contents by the specified boundary according to
+ * [RFC 2026 Multipart Media Type]{@link https://datatracker.ietf.org/doc/html/rfc2046#section-5.1}.
  *
  * Returns an array of new {@link Buffer} objects that reference the same memory as the original,
  * but offset and cropped appropriately.
