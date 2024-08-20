@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 
-import {ParsedFormFieldFileList, parseMultipartFormData} from "@/parsers/multipart-form-data";
+import { parseMultipartFormData } from '@/parsers/multipart-form-data'
 
 it('should parse valid multipart form data with a single part', () => {
   const multipart = [
@@ -17,13 +17,13 @@ it('should parse valid multipart form data with a single part', () => {
 
   expect(parseMultipartFormData(Buffer.from(multipart), 'boundary')).toMatchObject({
     foo: {
-      fieldName: "foo",
-      type: "field-value",
+      fieldName: 'foo',
+      type: 'field-value',
       value: {
         headers: {},
-        content: Buffer.from('{ "foo": "bar" }')
-      }
-    }
+        content: Buffer.from('{ "foo": "bar" }'),
+      },
+    },
   })
 })
 
@@ -49,23 +49,23 @@ it('should parse valid multipart form data with multiple parts', () => {
   const result = parseMultipartFormData(Buffer.from(multipart), 'boundary')
   expect(result).toMatchObject({
     foo: {
-      fieldName: "foo",
-      type: "field-value",
+      fieldName: 'foo',
+      type: 'field-value',
       value: {
         headers: {},
-        content: Buffer.from('{ "foo": "bar" }')
-      }
+        content: Buffer.from('{ "foo": "bar" }'),
+      },
     },
     bar: {
-      fieldName: "bar",
-      type: "field-file-list",
+      fieldName: 'bar',
+      type: 'field-file-list',
       files: [
         {
-          filename: "baz",
-          content: Buffer.from("foo bar baz\r\n"),
-          headers: {}
-        }
-      ]
-    }
+          filename: 'baz',
+          content: Buffer.from('foo bar baz\r\n'),
+          headers: {},
+        },
+      ],
+    },
   })
 })
