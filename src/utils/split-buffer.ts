@@ -1,11 +1,11 @@
-import { Buffer } from "node:buffer"
+import { Buffer } from 'node:buffer'
 
 /**
  * Split a buffer's contents by some delimiter.
- * 
+ *
  * Returns an array of new {@link Buffer} objects that reference the same memory as the original,
- * but offset and cropped appropriately. 
- * 
+ * but offset and cropped appropriately.
+ *
  * @param toSplit
  * @param delimiter
  */
@@ -16,8 +16,8 @@ export function splitBuffer(toSplit: Buffer, delimiter: string | Buffer, encodin
   if (!(delimiter instanceof Buffer)) {
     delimiter = Buffer.from(delimiter, encoding)
   }
-  
-  let currentIndex: number = 0
+
+  let currentIndex = 0
   let lastPartBeginIndex = 0
   while (true) {
     currentIndex = toSplit.indexOf(delimiter, currentIndex)
@@ -26,7 +26,7 @@ export function splitBuffer(toSplit: Buffer, delimiter: string | Buffer, encodin
     currentIndex += delimiter.byteLength
     lastPartBeginIndex = currentIndex
   }
-  
+
   parts.push(toSplit.subarray(lastPartBeginIndex))
   return parts
 }
