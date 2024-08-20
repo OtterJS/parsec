@@ -5,11 +5,11 @@ import { parseMultipart } from '@/parsers/multipart'
 it('should parse valid multipart with a single part', () => {
   const multipart = [
     'preamble',
-    '--boundary',
+    '--boundary  ',
     'x-content-type: application/json',
     '',
     '{ "foo": "bar" }',
-    '--boundary',
+    '--boundary--',
     '',
     'epilogue',
   ].join('\r\n')
@@ -31,12 +31,12 @@ it('should parse valid multipart with multiple parts', () => {
     'x-content-type: application/json',
     '',
     '{ "foo": "bar" }',
-    '--boundary',
+    '--boundary\t  ',
     'content-length: 6',
     'x-content-disposition: attachment',
     '',
     'foobar',
-    '--boundary',
+    '--boundary--',
     '',
     'epilogue',
   ].join('\r\n')

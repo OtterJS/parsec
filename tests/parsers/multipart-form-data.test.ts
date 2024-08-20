@@ -10,7 +10,7 @@ it('should parse valid multipart form data with a single part', () => {
     'content-type: application/json',
     '',
     '{ "foo": "bar" }',
-    '--boundary',
+    '--boundary--',
     '',
     'epilogue',
   ].join('\r\n')
@@ -41,7 +41,7 @@ it('should parse valid multipart form data with multiple parts', () => {
     '',
     'foo bar baz',
     '',
-    '--boundary',
+    '--boundary--',
     '',
     'epilogue',
   ].join('\r\n')
