@@ -33,6 +33,7 @@
   },
   "packageManager": "pnpm@9.4.0",
   "dependencies": {
+    "@otterhttp/content-disposition": "^3.1.0",
     "@otterhttp/content-type": "^0.4.0",
     "@otterhttp/errors": "^0.2.0",
     "@otterhttp/type-is": "^4.0.0",
