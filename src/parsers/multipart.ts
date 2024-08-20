@@ -2,12 +2,12 @@ import { type ParsedHeaders, parseHttpHeader } from '@/parsers/http-headers'
 import { splitBuffer } from '@/utils/split-buffer'
 import { ClientError } from '@otterhttp/errors'
 
-type ParsedMultipartDataPart = {
+export type ParsedMultipartDataPart = {
   headers: ParsedHeaders
   content: Buffer
 }
 
-type ParsedMultipartData = Array<ParsedMultipartDataPart>
+export type ParsedMultipartData = Array<ParsedMultipartDataPart>
 
 const CRLF = Buffer.from('\r\n')
 
