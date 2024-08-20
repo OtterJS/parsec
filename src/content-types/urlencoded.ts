@@ -18,7 +18,7 @@ export type UrlencodedBodyParsingOptions<
    *
    * The default matcher will match requests with Content-Type `application/x-www-form-urlencoded`, `application/foobar+x-www-form-urlencoded`, etc.
    *
-   * @default typeChecker("+urlencoded")
+   * @default typeChecker("application/*+urlencoded")
    */
   matcher?: (req: Req, res: Res) => boolean
 }

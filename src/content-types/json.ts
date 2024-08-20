@@ -33,7 +33,7 @@ export type JsonBodyParsingOptions<
    *
    * The default matcher will match requests with Content-Type `application/json`, `application/manifest+json`, etc.
    *
-   * @default typeChecker("+json")
+   * @default typeChecker("application/*+json")
    */
   matcher?: (req: Req, res: Res) => boolean
 }
