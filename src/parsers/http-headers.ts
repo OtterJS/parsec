@@ -1,9 +1,9 @@
 import type { IncomingHttpHeaders } from 'node:http'
+import { type ContentDisposition, parse as parseContentDisposition } from '@otterhttp/content-disposition'
+import { type ContentType, parse as parseContentType } from '@otterhttp/content-type'
 import { ClientError } from '@otterhttp/errors'
-import { type ContentType, parse as parseContentType } from "@otterhttp/content-type"
-import { type ContentDisposition, parse as parseContentDisposition } from "@otterhttp/content-disposition";
 
-import type { Omit } from "@/types";
+import type { Omit } from '@/types'
 
 export type ParsedHeaders = Omit<IncomingHttpHeaders, 'content-type' | 'content-disposition'> & {
   'content-type'?: ContentType | undefined
@@ -119,7 +119,7 @@ function matchKnownFields(field: string, lowercased?: boolean) {
       if (field === 'X-Forwarded-Proto' || field === 'x-forwarded-proto') return '\u0000x-forwarded-proto'
       break
     case 19:
-      if (field === "Content-Disposition" || field === "content-disposition") return 'content-disposition'
+      if (field === 'Content-Disposition' || field === 'content-disposition') return 'content-disposition'
       if (field === 'Proxy-Authorization' || field === 'proxy-authorization') return 'proxy-authorization'
       if (field === 'If-Unmodified-Since' || field === 'if-unmodified-since') return 'if-unmodified-since'
       break
@@ -144,7 +144,7 @@ function addHeader(field: string, value: string, dest: ParsedHeaders): void {
     } else {
       dest[field] = value
     }
-  } 
+  }
   // Array header -- only Set-Cookie at the moment
   else if (flag === 1) {
     if (dest['set-cookie'] !== undefined) {
@@ -152,15 +152,15 @@ function addHeader(field: string, value: string, dest: ParsedHeaders): void {
     } else {
       dest['set-cookie'] = [value]
     }
-  } 
+  }
   // Drop duplicates
   else if (dest[field] === undefined) {
-    if (field === "content-type") {
-      dest["content-type"] = parseContentType(value)
+    if (field === 'content-type') {
+      dest['content-type'] = parseContentType(value)
       return
     }
-    if (field === "content-disposition") {
-      dest["content-disposition"] = parseContentDisposition(value)
+    if (field === 'content-disposition') {
+      dest['content-disposition'] = parseContentDisposition(value)
       return
     }
     dest[field] = value
