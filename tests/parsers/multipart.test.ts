@@ -166,3 +166,18 @@ it('should reject multipart form data with no close delimiter', () => {
     parseMultipart(Buffer.from(multipart), 'boundary')
   }).toThrow()
 })
+
+it('should reject multipart form data with non-linear-whitespace characters on a boundary line', () => {
+  const multipart = [
+    'preamble',
+    '--boundary  eeee',
+    '',
+    '',
+    '--boundary--',
+    'epilogue',
+  ].join('\r\n')
+
+  expect(() => {
+    parseMultipart(Buffer.from(multipart), 'boundary')
+  }).toThrow()
+})
