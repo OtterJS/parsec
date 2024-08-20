@@ -46,8 +46,7 @@ it('should parse valid multipart form data with multiple parts', () => {
     'epilogue',
   ].join('\r\n')
 
-  const result = parseMultipartFormData(Buffer.from(multipart), 'boundary')
-  expect(result).toMatchObject({
+  expect(parseMultipartFormData(Buffer.from(multipart), 'boundary')).toMatchObject({
     foo: {
       fieldName: 'foo',
       type: 'field-value',
