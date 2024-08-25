@@ -20,7 +20,7 @@ export type RawBodyParsingOptions<
 export function raw<
   Req extends Request & HasBody<Buffer> = Request & HasBody<Buffer>,
   Res extends Response<Req> = Response<Req>,
->(options: RawBodyParsingOptions<Req, Res>) {
+>(options?: RawBodyParsingOptions<Req, Res>) {
   const optionsCopy: RawReadOptions = Object.assign({}, options)
   optionsCopy.limit ??= '100kb'
   optionsCopy.inflate ??= true
