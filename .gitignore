@@ -37,6 +37,7 @@
 ## Markdowns
 !*.md
 !LICENSE
+!/licenses
 
 ## important Git files
 !.gitmodules
