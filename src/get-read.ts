@@ -3,8 +3,8 @@ import { finished } from 'node:stream/promises'
 import * as zlib from 'node:zlib'
 import { ClientError, HttpError, ServerError } from '@otterhttp/errors'
 import { parse as parseBytes } from 'bytes'
-import { encodingExists as charsetExists, decode as iconvDecode } from 'iconv-lite'
 
+import { charsetExists, decodeCharset } from '@/utils/iconv'
 import { alreadyParsed } from '@/utils/already-parsed-symbol'
 import { ClientCharsetError, ClientEncodingError, ParseFailedError, VerifyFailedError } from '@/utils/errors'
 import { getCharset } from '@/utils/get-request-charset'
@@ -215,7 +215,7 @@ export const getRead = <T = unknown>(parseFunction: (body: string) => T | Promis
 
     let body: string
     try {
-      body = iconvDecode(bodyBlob, requestCharset)
+      body = decodeCharset(bodyBlob, requestCharset)
     } catch (err) {
       throw new ClientError(`request body does not adhere to charset '${requestCharset}'`, {
         statusCode: 400,
