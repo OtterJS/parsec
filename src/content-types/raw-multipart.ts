@@ -62,5 +62,6 @@ export function rawMultipart<
         cause: err instanceof Error ? err : undefined,
       })
     }
+    next()
   }
 }
