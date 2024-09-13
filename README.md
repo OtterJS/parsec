@@ -104,8 +104,8 @@ res.end(req.body) // "THIS TEXT MUST BE UPPERCASED"
 
 The parsec is a unit of length used to measure large distances to astronomical objects outside the Solar System.
 
-[npm-url]: https://npmjs.com/package/@otterjs/parsec
-[npm-img]: https://img.shields.io/npm/dt/@otterjs/parsec?style=for-the-badge&color=blueviolet
+[npm-url]: https://npmjs.com/package/@otterhttp/parsec
+[npm-img]: ihttps://img.shields.io/npm/dt/@otterhttp/parsec?style=for-the-badge&color=blueviolet
 [github-actions]: https://github.com/otterjs/parsec/actions
 [gh-actions-img]: https://img.shields.io/github/actions/workflow/status/otterjs/parsec/ci.yml?style=for-the-badge&logo=github&label=&color=blueviolet
 [cov-url]: https://coveralls.io/github/OtterJS/parsec
