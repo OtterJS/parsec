@@ -107,6 +107,6 @@ The parsec is a unit of length used to measure large distances to astronomical o
 [npm-url]: https://npmjs.com/package/@otterhttp/parsec
 [npm-img]: https://img.shields.io/npm/dt/@otterhttp/parsec?style=for-the-badge&color=blueviolet
 [github-actions]: https://github.com/otterjs/parsec/actions
-[gh-actions-img]: https://img.shields.io/github/actions/workflow/status/otterjs/parsec/ci.yml?style=for-the-badge&logo=github&label=&color=blueviolet
+[gh-actions-img]: https://img.shields.io/github/actions/workflow/status/otterjs/parsec/main.yml?style=for-the-badge&logo=github&label=&color=blueviolet
 [cov-url]: https://coveralls.io/github/OtterJS/parsec
 [cov-img]: https://img.shields.io/coveralls/github/OtterJS/parsec?style=for-the-badge&color=blueviolet
