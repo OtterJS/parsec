@@ -62,5 +62,6 @@ export function multipartFormData<
         cause: err instanceof Error ? err : undefined,
       })
     }
+    next()
   }
 }
