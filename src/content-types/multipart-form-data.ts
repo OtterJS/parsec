@@ -3,13 +3,13 @@ import { ClientError, HttpError } from '@otterhttp/errors'
 
 import { type RawReadOptions, type ReadOptions, getRawRead } from '@/get-read'
 import { type ParsedMultipartFormData, parseMultipartFormData } from '@/parsers/multipart-form-data'
-import type { HasBody, MaybeParsed, NextFunction, Request, Response } from '@/types'
+import type { MaybeParsed, Request, Response } from '@/types'
 import { alreadyParsed } from '@/utils/already-parsed-symbol'
 import { hasNoBody } from '@/utils/has-no-body'
 import { typeChecker } from '@/utils/type-checker'
 
 export type MultipartFormDataBodyParsingOptions<
-  Req extends Request & HasBody<ParsedMultipartFormData> = Request & HasBody<ParsedMultipartFormData>,
+  Req extends Request = Request,
   Res extends Response<Req> = Response<Req>,
 > = RawReadOptions & {
   /**
@@ -22,10 +22,9 @@ export type MultipartFormDataBodyParsingOptions<
   matcher?: (req: Req, res: Res) => boolean
 }
 
-export function multipartFormData<
-  Req extends Request & HasBody<ParsedMultipartFormData> = Request & HasBody<ParsedMultipartFormData>,
-  Res extends Response<Req> = Response<Req>,
->(options?: MultipartFormDataBodyParsingOptions<Req, Res>) {
+export function makeMultipartFormData<Req extends Request = Request, Res extends Response<Req> = Response<Req>>(
+  options?: MultipartFormDataBodyParsingOptions<Req, Res>,
+) {
   const optionsCopy: ReadOptions = Object.assign({}, options)
   optionsCopy.limit ??= '10mb'
   optionsCopy.inflate ??= true
@@ -40,10 +39,10 @@ export function multipartFormData<
   }
 
   const rawRead = getRawRead(options)
-  return async (req: Req & MaybeParsed, res: Res, next: NextFunction) => {
-    if (req[alreadyParsed] === true) return next()
-    if (hasNoBody(req.method)) return next()
-    if (!matcher(req, res)) return next()
+  return async (req: Req & MaybeParsed, res: Res): Promise<ParsedMultipartFormData | undefined> => {
+    if (req[alreadyParsed] === true) return undefined
+    if (hasNoBody(req.method)) return undefined
+    if (!matcher(req, res)) return undefined
 
     if (req.headers['content-type'] == null) failBoundaryParameter()
     const contentType = ContentType.parse(req.headers['content-type'])
@@ -53,7 +52,7 @@ export function multipartFormData<
     const rawBody = await rawRead(req, res)
 
     try {
-      req.body = parseMultipartFormData(rawBody, boundary)
+      return parseMultipartFormData(rawBody, boundary)
     } catch (err) {
       if (err instanceof HttpError) throw err
       throw new ClientError('Multipart body parsing failed', {
@@ -62,7 +61,6 @@ export function multipartFormData<
         cause: err instanceof Error ? err : undefined,
       })
     }
-    next()
   }
 }
 

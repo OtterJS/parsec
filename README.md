@@ -92,10 +92,11 @@ Custom function for `parsec`.
 
 ```js
 // curl -d "this text must be uppercased" localhost
-await custom(
-  req,
-  (d) => d.toUpperCase(),
-  (err) => {}
+await makeCustom(
+        req,
+        (d) => d.toUpperCase(),
+        (err) => {
+        }
 )
 res.end(req.body) // "THIS TEXT MUST BE UPPERCASED"
 ```

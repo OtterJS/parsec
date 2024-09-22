@@ -2,24 +2,17 @@ import { createServer } from 'node:http'
 import { makeFetch } from 'supertest-fetch'
 import { test } from 'vitest'
 
-import { type HasBody, type Request, type Response, text } from '@/index'
+import { type Request, makeText } from '@/index'
 
-const textInstance = text()
-const loggingText = async (req: Request & HasBody<string>, res: Response) => {
-  try {
-    await textInstance(req, res, () => undefined)
-  } catch (err) {
-    console.log(err)
-  }
-}
+const text = makeText()
 
 test('should parse text body', async () => {
-  const server = createServer(async (req: Request & HasBody<string>, res) => {
-    await loggingText(req, res)
+  const server = createServer(async (req: Request, res) => {
+    const body = await text(req, res)
 
     res.setHeader('Content-Type', 'text/plain')
 
-    res.end(req.body)
+    res.end(body)
   })
 
   await makeFetch(server)('/', {
@@ -33,8 +26,8 @@ test('should parse text body', async () => {
 })
 
 test('text should ignore GET request', async () => {
-  const server = createServer(async (req: Request & HasBody<string>, res) => {
-    await loggingText(req, res)
+  const server = createServer(async (req: Request, res) => {
+    await text(req, res)
 
     res.setHeader('Content-Type', 'text/plain')
 

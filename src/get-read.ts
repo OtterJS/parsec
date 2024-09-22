@@ -14,7 +14,7 @@ import { LengthValidator } from '@/utils/length-validator'
 import { Limiter } from '@/utils/limiter'
 import { RawSink } from '@/utils/raw-sink'
 import { requestPipeline } from '@/utils/request-pipeline'
-import type { HasBody, MaybeParsed, Request, Response } from './types'
+import type { MaybeParsed, Request, Response } from './types'
 
 const supportedEncodings = new Map<string, () => Transform>([
   ['deflate', () => zlib.createInflate()],
@@ -70,11 +70,11 @@ const getRawContentStreamer = (options?: StreamRawContentOptions) => {
   }
 }
 
-type RawPreVerifyFunction<
-  Req extends Request & HasBody = Request & HasBody,
-  Res extends Response<Req> = Response<Req>,
-> = (req: Req, res: Res) => void | Promise<void>
-type RawVerifyFunction<Req extends Request & HasBody = Request & HasBody, Res extends Response<Req> = Response<Req>> = (
+type RawPreVerifyFunction<Req extends Request = Request, Res extends Response<Req> = Response<Req>> = (
+  req: Req,
+  res: Res,
+) => void | Promise<void>
+type RawVerifyFunction<Req extends Request = Request, Res extends Response<Req> = Response<Req>> = (
   req: Req,
   res: Res,
   buf: Buffer,
@@ -145,12 +145,12 @@ export const getRawRead = (options?: RawReadOptions) => {
   }
 }
 
-type PreVerifyFunction<Req extends Request & HasBody = Request & HasBody, Res extends Response<Req> = Response<Req>> = (
+type PreVerifyFunction<Req extends Request = Request, Res extends Response<Req> = Response<Req>> = (
   req: Req,
   res: Res,
   charset: string | undefined,
 ) => void | Promise<void>
-type VerifyFunction<Req extends Request & HasBody = Request & HasBody, Res extends Response<Req> = Response<Req>> = (
+type VerifyFunction<Req extends Request = Request, Res extends Response<Req> = Response<Req>> = (
   req: Req,
   res: Res,
   blob: Buffer,

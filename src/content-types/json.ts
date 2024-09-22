@@ -1,18 +1,17 @@
 import { ContentType } from '@otterhttp/content-type'
 
 import { type ReadOptions, getRead } from '@/get-read'
-import type { HasBody, MaybeParsed, NextFunction, Request, Response } from '@/types'
+import type { MaybeParsed, Request, Response } from '@/types'
 import { alreadyParsed } from '@/utils/already-parsed-symbol'
 import { compose } from '@/utils/compose-functions'
 import { ClientCharsetError } from '@/utils/errors'
 import { hasNoBody } from '@/utils/has-no-body'
 import { typeChecker } from '@/utils/type-checker'
 
-export type JsonBodyParsingOptions<
-  Body = unknown,
-  Req extends Request & HasBody<Body> = Request & HasBody<Body>,
-  Res extends Response<Req> = Response<Req>,
-> = Omit<ReadOptions, 'defaultCharset'> & {
+export type JsonBodyParsingOptions<Req extends Request = Request, Res extends Response<Req> = Response<Req>> = Omit<
+  ReadOptions,
+  'defaultCharset'
+> & {
   /**
    * JSON reviver to pass into JSON.parse.
    *
@@ -65,11 +64,11 @@ function ensureCharsetIsUtf8(_req: unknown, _res: unknown, charset: string | und
   })
 }
 
-export function json<
-  Body = unknown,
-  Req extends Request & HasBody<Body> = Request & HasBody<Body>,
-  Res extends Response<Req> = Response<Req>,
->(options?: JsonBodyParsingOptions<Body, Req, Res>) {
+type ParsedJson = never | string | number | boolean | null | { [property: string]: ParsedJson } | ParsedJson[]
+
+export function makeJson<Req extends Request = Request, Res extends Response<Req> = Response<Req>>(
+  options?: JsonBodyParsingOptions<Req, Res>,
+) {
   const optionsCopy: ReadOptions = Object.assign({ defaultCharset: 'utf-8' }, options)
   optionsCopy.limit ??= '100kb'
   optionsCopy.inflate ??= true
@@ -79,7 +78,7 @@ export function json<
   const strict = options?.strict ?? true
   const matcher = options?.matcher ?? typeChecker(ContentType.parse('application/*+json'))
 
-  function parse(body: string) {
+  function parse(body: string): ParsedJson {
     if (body.length === 0) return {}
 
     if (strict) {
@@ -93,11 +92,10 @@ export function json<
   }
 
   const read = getRead(parse, optionsCopy)
-  return async (req: Req & MaybeParsed, res: Res, next: NextFunction) => {
-    if (req[alreadyParsed] === true) return next()
-    if (hasNoBody(req.method)) return next()
-    if (!matcher(req, res)) return next()
-    req.body = await read(req, res)
-    next()
+  return async (req: Req & MaybeParsed, res: Res): Promise<ParsedJson | undefined> => {
+    if (req[alreadyParsed] === true) return undefined
+    if (hasNoBody(req.method)) return undefined
+    if (!matcher(req, res)) return undefined
+    return await read(req, res)
   }
 }

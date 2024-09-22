@@ -2,24 +2,17 @@ import { createServer } from 'node:http'
 import { makeFetch } from 'supertest-fetch'
 import { test } from 'vitest'
 
-import { type HasBody, type Request, type Response, custom } from '@/index'
+import { type Request, makeCustom } from '@/index'
 
-const customInstance = custom((d) => d.toUpperCase())
-const loggingCustom = async (req: Request & HasBody<string>, res: Response) => {
-  try {
-    await customInstance(req, res, () => undefined)
-  } catch (err) {
-    console.log(err)
-  }
-}
+const custom = makeCustom((d) => d.toUpperCase())
 
 test('should parse custom body', async () => {
-  const server = createServer(async (req: Request & HasBody<string>, res) => {
-    await loggingCustom(req, res)
+  const server = createServer(async (req: Request, res) => {
+    const body = await custom(req, res)
 
     res.setHeader('Content-Type', 'text/plain')
 
-    res.end(req.body)
+    res.end(body)
   })
 
   await makeFetch(server)('/', {
@@ -33,12 +26,12 @@ test('should parse custom body', async () => {
 })
 
 test('custom should ignore GET request', async () => {
-  const server = createServer(async (req: Request & HasBody<string>, res) => {
-    await loggingCustom(req, res)
+  const server = createServer(async (req: Request, res) => {
+    const body = await custom(req, res)
 
     res.setHeader('Content-Type', 'text/plain')
 
-    res.end('GET is ignored')
+    res.end(body == null ? 'GET is ignored' : 'GET is not ignored')
   })
 
   await makeFetch(server)('/', {

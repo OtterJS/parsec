@@ -5,23 +5,20 @@ import { assert, afterEach, describe, expect, it, vi } from 'vitest'
 
 import './test-utils/mock-get-content-length'
 
-import { type HasBody, type JsonBodyParsingOptions, type Request, type Response, json } from '@/index'
+import { type JsonBodyParsingOptions, type Request, type Response, makeJson } from '@/index'
 import { getContentLength } from '@/utils/get-request-content-length'
 
 type FetchInit = Parameters<typeof fetch>[1]
 
 function createServer(opts?: JsonBodyParsingOptions) {
-  const jsonInstance = json(opts)
+  const json = makeJson(opts)
 
-  return http.createServer(async (req: Request & HasBody, res: Response) => {
-    function next() {
+  return http.createServer(async (req: Request, res: Response) => {
+    try {
+      const body = await json(req, res)
       res.statusCode = 200
       res.setHeader('Content-Type', 'application/json')
-      res.end(JSON.stringify(req.body))
-    }
-
-    try {
-      await jsonInstance(req, res, next)
+      res.end(JSON.stringify(body))
     } catch (err) {
       if (err instanceof HttpError) {
         res.statusCode = err.statusCode

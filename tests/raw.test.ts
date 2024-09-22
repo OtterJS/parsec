@@ -2,24 +2,17 @@ import { createServer } from 'node:http'
 import { makeFetch } from 'supertest-fetch'
 import { test } from 'vitest'
 
-import { type HasBody, type Request, type Response, raw } from '@/index'
+import { type Request, makeRaw } from '@/index'
 
-const rawInstance = raw()
-const loggingRaw = async (req: Request & HasBody<Buffer>, res: Response) => {
-  try {
-    await rawInstance(req, res, () => undefined)
-  } catch (err) {
-    console.log(err)
-  }
-}
+const raw = makeRaw()
 
 test('should parse raw body', async () => {
-  const server = createServer(async (req: Request & HasBody<Buffer>, res) => {
-    await loggingRaw(req, res)
+  const server = createServer(async (req: Request, res) => {
+    const body = await raw(req, res)
 
     res.setHeader('Content-Type', 'text/plain')
 
-    res.end(req.body)
+    res.end(body)
   })
 
   await makeFetch(server)('/', {
@@ -33,8 +26,8 @@ test('should parse raw body', async () => {
 })
 
 test('raw should ignore GET request', async () => {
-  const server = createServer(async (req: Request & HasBody<Buffer>, res) => {
-    await loggingRaw(req, res)
+  const server = createServer(async (req: Request, res) => {
+    const body = await raw(req, res)
 
     res.setHeader('Content-Type', 'text/plain')
 

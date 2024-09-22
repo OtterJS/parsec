@@ -1,12 +1,13 @@
 import { getRead } from '@/get-read'
-import type { HasBody, MaybeParsed, NextFunction, Request, Response } from '@/types'
+import type { MaybeParsed, Request, Response } from '@/types'
 import { alreadyParsed } from '@/utils/already-parsed-symbol'
+import { hasNoBody } from '@/utils/has-no-body'
 
-export const custom = <T = unknown>(fn: (body: string) => T) => {
+export const makeCustom = <T = unknown>(fn: (body: string) => T) => {
   const read = getRead(fn)
-  return async (req: Request & HasBody<T> & MaybeParsed, res: Response, next: NextFunction) => {
-    if (req[alreadyParsed] === true) return next()
-    req.body = await read(req, res)
-    next()
+  return async (req: Request & MaybeParsed, res: Response): Promise<T | undefined> => {
+    if (req[alreadyParsed] === true) return undefined
+    if (hasNoBody(req.method)) return undefined
+    return await read(req, res)
   }
 }
