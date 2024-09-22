@@ -65,3 +65,5 @@ export function rawMultipart<
     next()
   }
 }
+
+export type { ParsedMultipartData }

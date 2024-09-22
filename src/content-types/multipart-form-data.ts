@@ -65,3 +65,5 @@ export function multipartFormData<
     next()
   }
 }
+
+export type { ParsedMultipartFormData }
