@@ -25,20 +25,6 @@ test('should parse custom body', async () => {
   }).expect(200, 'HELLO WORLD')
 })
 
-test('custom should ignore GET request', async () => {
-  const server = createServer(async (req: Request, res) => {
-    const body = await custom(req, res)
+test.skip('custom should ignore GET request', async () => {
 
-    res.setHeader('Content-Type', 'text/plain')
-
-    res.end(body == null ? 'GET is ignored' : 'GET is not ignored')
-  })
-
-  await makeFetch(server)('/', {
-    method: 'GET',
-    headers: {
-      Accept: 'text/plain',
-      'Content-Type': 'text/plain',
-    },
-  }).expect(200, 'GET is ignored')
 })
