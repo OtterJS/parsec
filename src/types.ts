@@ -11,4 +11,4 @@ export type Response<Request extends IncomingMessage = IncomingMessage> = Server
 // https://stackoverflow.com/a/76616671
 export type Omit<T, K extends PropertyKey> = { [P in keyof T as Exclude<P, K>]: T[P] }
 
-export type * from "@/parsers"
+export type * from '@/parsers'

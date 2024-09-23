@@ -108,9 +108,7 @@ it('should not parse json body with no content-type headers', async () => {
   await expect(response.text()).resolves.toEqual('')
 })
 
-it.skip('should ignore GET requests', async () => {
-
-})
+it.skip('should ignore GET requests', async () => {})
 
 describe('with invalid JSON body', () => {
   it('should 400 when body consists only of whitespace', async () => {

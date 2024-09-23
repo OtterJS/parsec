@@ -25,6 +25,4 @@ test('should parse urlencoded body', async () => {
   }).expect(200, { hello: 'world' })
 })
 
-test.skip('urlencoded should ignore GET request', async () => {
-
-})
+test.skip('urlencoded should ignore GET request', async () => {})

@@ -25,6 +25,4 @@ test('should parse text body', async () => {
   }).expect(200, 'hello world')
 })
 
-test.skip('text should ignore GET request', async () => {
-
-})
+test.skip('text should ignore GET request', async () => {})

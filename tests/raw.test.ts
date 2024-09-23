@@ -25,6 +25,4 @@ test('should parse raw body', async () => {
   }).expect(200, 'hello world')
 })
 
-test.skip('raw should ignore GET request', async () => {
-
-})
+test.skip('raw should ignore GET request', async () => {})
