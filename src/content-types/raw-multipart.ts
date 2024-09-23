@@ -63,5 +63,3 @@ export function makeRawMultipart<Req extends Request = Request, Res extends Resp
     }
   }
 }
-
-export type { ParsedMultipartData }

@@ -63,5 +63,3 @@ export function makeMultipartFormData<Req extends Request = Request, Res extends
     }
   }
 }
-
-export type { ParsedMultipartFormData }

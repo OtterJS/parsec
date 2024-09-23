@@ -5,6 +5,8 @@ import { ClientError } from '@otterhttp/errors'
 
 import type { Omit } from '@/types'
 
+export type { ContentType, ContentDisposition }
+
 export type ParsedHeaders = Omit<IncomingHttpHeaders, 'content-type' | 'content-disposition'> & {
   'content-type'?: ContentType | undefined
   'content-disposition'?: ContentDisposition | undefined
